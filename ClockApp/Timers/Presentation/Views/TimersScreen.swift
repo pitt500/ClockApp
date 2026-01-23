@@ -14,21 +14,32 @@ struct TimersScreen: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    headerContent
+                if let focused = store.focusedTimer {
+                    Section {
+                        NavigationLink {
+                            TimerDetailView(item: focused)
+                        } label: {
+                            TimerRowView(item: focused, trailingAction: .pauseResume)
+                        }
+                    }
+                } else {
+                    Section {
+                        PickerHeaderView(draft: $store.draft) {
+                            store.startFromDraft()
+                        }
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
+                    }
                 }
 
-                if !store.timers.isEmpty {
+                if !store.recents.isEmpty {
                     Section("Recents") {
-                        ForEach(store.timers) { item in
-                            Button {
-                                store.focus(item)
+                        ForEach(store.recents) { item in
+                            NavigationLink {
+                                TimerDetailView(item: item)
                             } label: {
-                                TimerRowView(item: item, isFocused: item.id == store.focusedTimerID)
+                                TimerRowView(item: item, trailingAction: .startPreset)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -41,25 +52,13 @@ struct TimersScreen: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        store.startQuick(seconds: 20)
+                        store.draft = .init(hours: 0, minutes: 0, seconds: 20)
+                        store.startFromDraft()
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    private var headerContent: some View {
-        if store.hasRunningTimers, let focused = store.focusedTimer {
-            RunningHeaderView(item: focused)
-                .padding(.vertical, 12)
-        } else {
-            PickerHeaderView(draft: $store.draft) {
-                store.startFromDraft()
-            }
-            .padding(.vertical, 12)
         }
     }
 }

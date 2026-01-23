@@ -8,16 +8,18 @@
 
 import Foundation
 
-// UI-friendly representation of a timer in the list.
-// It owns a dedicated TimerManager instance so multiple timers can run independently.
+// Represents a timer entry shown in the UI (Focused or Recents).
+// It keeps the original configured duration so presets persist.
 struct TimerItem: Identifiable {
     let id: UUID
     var label: String
+    let configuredDuration: Duration
     let manager: TimerManager
 
-    init(label: String, manager: TimerManager) {
+    init(label: String, configuredDuration: Duration, manager: TimerManager) {
         self.id = UUID()
         self.label = label
+        self.configuredDuration = configuredDuration
         self.manager = manager
     }
 }

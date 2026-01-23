@@ -16,14 +16,13 @@ final class TimerManager {
     }
     
     var status: Status = .idle
-    var totalTime: Duration = .seconds(0)
-    var remainingTime: Duration = .seconds(0)
+    var totalTime: Duration = .seconds(0)       // Preset duration (kept for Recents)
+    var remainingTime: Duration = .seconds(0)   // Countdown value
 
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
-    // Event: fired when the timer reaches 0.
-    // The manager does not know about UI or the store. It only notifies.
+    // Fired only when the timer reaches 0 naturally.
     var onDidFinish: (() -> Void)?
 
     init(activityHandler: TimerActivityHandling? = nil) {
@@ -58,16 +57,28 @@ final class TimerManager {
         startUnderlyingTimer()
     }
 
-    func stop() {
-        status = .idle
-        timer?.invalidate()
-        timer = nil
-        totalTime = .seconds(0)
-        remainingTime = .seconds(0)
-        activityHandler?.end()
+    // User-driven stop. Does NOT fire onDidFinish.
+    func cancel() {
+        stopInternal()
     }
 
     // MARK: - Private
+
+    private func finishNaturally() {
+        stopInternal()
+        onDidFinish?()
+    }
+
+    private func stopInternal() {
+        status = .idle
+        timer?.invalidate()
+        timer = nil
+
+        // Always keep totalTime so Recents can show the original preset.
+        remainingTime = .seconds(0)
+
+        activityHandler?.end()
+    }
 
     private func tick() async {
         guard status == .running else { return }
@@ -76,8 +87,7 @@ final class TimerManager {
             remainingTime -= .seconds(1)
             activityHandler?.update(remainingTime: remainingTime, isPaused: false)
         } else {
-            stop()
-            onDidFinish?()
+            finishNaturally()
         }
     }
 
@@ -89,8 +99,7 @@ final class TimerManager {
             Task { await self.tick() }
         }
 
-        // RunLoop anchor for your RunLoop video: using .common keeps it running
-        // during common UI interactions.
+        // RunLoop anchor for the RunLoop explanation video.
         RunLoop.current.add(timer!, forMode: .common)
     }
 

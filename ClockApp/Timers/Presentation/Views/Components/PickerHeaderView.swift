@@ -40,10 +40,14 @@ struct PickerHeaderView: View {
         .padding(.horizontal, 16)
     }
 
-    private func timePicker(title: String, range: ClosedRange<Int>, selection: Binding<Int>) -> some View {
+    private func timePicker(
+        title: String,
+        range: ClosedRange<Int>,
+        selection: Binding<Int>
+    ) -> some View {
         VStack(spacing: 4) {
             Picker(title, selection: selection) {
-                ForEach(Array(range), id: \.self) { value in
+                ForEach(range, id: \.self) { value in
                     Text("\(value)").tag(value)
                 }
             }
