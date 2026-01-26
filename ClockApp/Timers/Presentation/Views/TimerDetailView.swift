@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct TimerDetailView: View {
+    @Environment(\.dismiss) var dismiss
     let item: TimerItem
 
     var body: some View {
@@ -40,6 +41,7 @@ struct TimerDetailView: View {
             HStack {
                 Button("Cancel") {
                     item.manager.cancel()
+                    dismiss()
                 }
                 .buttonStyle(.bordered)
                 .tint(.gray)
