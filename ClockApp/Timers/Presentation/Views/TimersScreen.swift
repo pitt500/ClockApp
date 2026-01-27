@@ -14,21 +14,27 @@ struct TimersScreen: View {
     var body: some View {
         NavigationStack {
             List {
-                if let focused = store.focusedTimer {
-                    Section {
-                        NavigationLink {
-                            TimerDetailView(item: focused)
-                        } label: {
-                            TimerRowView(item: focused, trailingAction: .pauseResume)
-                        }
-                    }
-                } else {
+
+                // If nothing is running anywhere, show the picker.
+                if !store.hasRunningTimers {
                     Section {
                         PickerHeaderView(draft: $store.draft) {
                             store.startFromDraft()
                         }
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
+                    }
+                } else if let focused = store.focusedTimer {
+                    // Focused running timer section (same row UI)
+                    Section {
+                        NavigationLink {
+                            TimerDetailView(item: focused)
+                        } label: {
+                            TimerRowView(
+                                item: focused,
+                                onPrimaryAction: { store.toggle(focused) }
+                            )
+                        }
                     }
                 }
 
@@ -38,7 +44,10 @@ struct TimersScreen: View {
                             NavigationLink {
                                 TimerDetailView(item: item)
                             } label: {
-                                TimerRowView(item: item, trailingAction: .startPreset)
+                                TimerRowView(
+                                    item: item,
+                                    onPrimaryAction: { store.toggle(item) }
+                                )
                             }
                         }
                     }

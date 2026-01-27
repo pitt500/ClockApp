@@ -31,61 +31,67 @@ final class TimersStore {
     var focusedTimerID: UUID?
 
     var runningTimers: [TimerItem] {
-        timers.filter { $0.manager.status != .idle }
+        timers.filter { $0.manager.status == .running || $0.manager.status == .paused }
     }
 
     var hasRunningTimers: Bool {
         !runningTimers.isEmpty
     }
 
-    // Determines which timer is shown in the focused section.
+    // Focused timer must be running/paused. If not, we show the picker.
     var focusedTimer: TimerItem? {
         if let id = focusedTimerID,
-           let match = timers.first(where: { $0.id == id }) {
+           let match = timers.first(where: { $0.id == id }),
+           match.manager.status != .idle {
             return match
         }
         return runningTimers.first
     }
 
-    // Recents accumulates all timers except the currently focused one.
+    // Recents accumulates everything, but hides the focused one to avoid duplicates.
     var recents: [TimerItem] {
-        guard let focusedTimer else { return timers }
-        return timers.filter { $0.id != focusedTimer.id }
+        guard let focused = focusedTimer else { return timers }
+        return timers.filter { $0.id != focused.id }
     }
 
     // MARK: - Actions
 
     func startFromDraft() {
         guard draft.isValid else { return }
-
-        let duration = draft.duration
-        let manager = TimerManager(activityHandler: NoopTimerActivityHandler())
-
-        manager.onDidFinish = { [weak self] in
-            self?.handleTimerDidFinish()
-        }
-
-        let item = TimerItem(
-            label: "Timer",
-            configuredDuration: duration,
-            manager: manager
-        )
-
-        timers.insert(item, at: 0)
-        focusedTimerID = item.id
-
-        manager.setTimer(totalTime: duration)
-        ensureFocusIsValid()
+        createAndStartTimer(duration: draft.duration)
     }
 
-    func focus(_ item: TimerItem) {
+    func startPreset(_ item: TimerItem) {
+        // Reuse the same manager to mimic iOS behavior: preset stays, timer starts again.
         focusedTimerID = item.id
+        item.manager.setTimer(totalTime: item.configuredDuration)
+    }
+
+    func toggle(_ item: TimerItem) {
+        switch item.manager.status {
+        case .idle:
+            startPreset(item)
+        case .running:
+            item.manager.pause()
+        case .paused:
+            item.manager.resume()
+        }
     }
 
     // MARK: - Private
 
-    private func handleTimerDidFinish() {
-        // Finished timers remain in Recents.
+    private func createAndStartTimer(duration: Duration) {
+        let manager = TimerManager(activityHandler: NoopTimerActivityHandler())
+
+        manager.onDidFinish = { [weak self] in
+            self?.ensureFocusIsValid()
+        }
+
+        let item = TimerItem(label: "Timer", configuredDuration: duration, manager: manager)
+        timers.insert(item, at: 0)
+        focusedTimerID = item.id
+
+        manager.setTimer(totalTime: duration)
         ensureFocusIsValid()
     }
 
@@ -95,9 +101,10 @@ final class TimersStore {
             return
         }
 
-        if let focusedTimer,
-           focusedTimer.manager.status == .idle {
-            focusedTimerID = runningTimers.first?.id
+        if let focused = focusedTimer, focused.manager.status != .idle {
+            return
         }
+
+        focusedTimerID = runningTimers.first?.id
     }
 }

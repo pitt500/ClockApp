@@ -15,9 +15,9 @@ struct PickerHeaderView: View {
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                timePicker(title: "hours", range: 0...23, selection: $draft.hours)
-                timePicker(title: "min", range: 0...59, selection: $draft.minutes)
-                timePicker(title: "sec", range: 0...59, selection: $draft.seconds)
+                timePicker("hours", range: 0...23, selection: $draft.hours)
+                timePicker("min", range: 0...59, selection: $draft.minutes)
+                timePicker("sec", range: 0...59, selection: $draft.seconds)
             }
             .frame(height: 180)
 
@@ -41,7 +41,7 @@ struct PickerHeaderView: View {
     }
 
     private func timePicker(
-        title: String,
+        _ title: String,
         range: ClosedRange<Int>,
         selection: Binding<Int>
     ) -> some View {

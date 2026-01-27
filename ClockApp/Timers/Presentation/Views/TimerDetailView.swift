@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct TimerDetailView: View {
-    @Environment(\.dismiss) var dismiss
     let item: TimerItem
 
     var body: some View {
@@ -24,10 +23,7 @@ struct TimerDetailView: View {
                     .trim(from: 0, to: progress)
                     .stroke(
                         .orange,
-                        style: StrokeStyle(
-                            lineWidth: 14,
-                            lineCap: .round
-                        )
+                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
                     .scaleEffect(x: -1, y: 1)
@@ -41,7 +37,6 @@ struct TimerDetailView: View {
             HStack {
                 Button("Cancel") {
                     item.manager.cancel()
-                    dismiss()
                 }
                 .buttonStyle(.bordered)
                 .tint(.gray)
@@ -55,12 +50,12 @@ struct TimerDetailView: View {
                     case .paused:
                         item.manager.resume()
                     case .idle:
-                        break
+                        // Optional: restart from detail
+                        item.manager.setTimer(totalTime: item.configuredDuration)
                     }
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(item.manager.status == .paused ? .green : .orange)
-                .disabled(item.manager.status == .idle)
             }
             .padding(.horizontal, 24)
 
@@ -73,10 +68,7 @@ struct TimerDetailView: View {
     private var configuredDurationText: Text {
         Text(
             item.configuredDuration,
-            format: .units(
-                allowed: [.hours, .minutes, .seconds],
-                width: .wide
-            )
+            format: .units(allowed: [.hours, .minutes, .seconds], width: .wide)
         )
         .foregroundStyle(.secondary)
     }

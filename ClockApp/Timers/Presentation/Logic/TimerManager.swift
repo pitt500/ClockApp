@@ -16,7 +16,7 @@ final class TimerManager {
     }
     
     var status: Status = .idle
-    var totalTime: Duration = .seconds(0)       // Preset duration (kept for Recents)
+    var totalTime: Duration = .seconds(0)       // Preset duration, always kept
     var remainingTime: Duration = .seconds(0)   // Countdown value
 
     private var timer: Timer?
@@ -74,8 +74,9 @@ final class TimerManager {
         timer?.invalidate()
         timer = nil
 
-        // Always keep totalTime so Recents can show the original preset.
-        remainingTime = .seconds(0)
+        // Key requirement:
+        // After cancel/finish we want the row to show the original preset.
+        remainingTime = totalTime
 
         activityHandler?.end()
     }
@@ -83,10 +84,12 @@ final class TimerManager {
     private func tick() async {
         guard status == .running else { return }
 
-        if remainingTime > .seconds(0) {
+        if remainingTime > .seconds(1) {
             remainingTime -= .seconds(1)
             activityHandler?.update(remainingTime: remainingTime, isPaused: false)
         } else {
+            // last second: finish now
+            remainingTime = .seconds(0)
             finishNaturally()
         }
     }
@@ -99,7 +102,7 @@ final class TimerManager {
             Task { await self.tick() }
         }
 
-        // RunLoop anchor for the RunLoop explanation video.
+        // RunLoop anchor for the RunLoop video.
         RunLoop.current.add(timer!, forMode: .common)
     }
 
