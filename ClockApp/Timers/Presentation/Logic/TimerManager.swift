@@ -74,8 +74,7 @@ final class TimerManager {
         timer?.invalidate()
         timer = nil
 
-        // Key requirement:
-        // After cancel/finish we want the row to show the original preset.
+        // Requirement: when idle, the row should show the original preset, not 0:00.
         remainingTime = totalTime
 
         activityHandler?.end()
@@ -102,7 +101,7 @@ final class TimerManager {
             Task { await self.tick() }
         }
 
-        // RunLoop anchor for the RunLoop video.
+        // RunLoop anchor for the RunLoop explanation video.
         RunLoop.current.add(timer!, forMode: .common)
     }
 

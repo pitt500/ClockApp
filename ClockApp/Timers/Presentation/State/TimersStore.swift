@@ -25,46 +25,18 @@ final class TimersStore {
     }
 
     var draft = Draft()
-    var timers: [TimerItem] = []
 
-    // Which running timer is highlighted as the focused row.
-    var focusedTimerID: UUID?
+    // Active timers (running or paused). Append at the end.
+    var activeTimers: [TimerItem] = []
 
-    var runningTimers: [TimerItem] {
-        timers.filter { $0.manager.status == .running || $0.manager.status == .paused }
-    }
-
-    var hasRunningTimers: Bool {
-        !runningTimers.isEmpty
-    }
-
-    // Focused timer must be running/paused. If not, we show the picker.
-    var focusedTimer: TimerItem? {
-        if let id = focusedTimerID,
-           let match = timers.first(where: { $0.id == id }),
-           match.manager.status != .idle {
-            return match
-        }
-        return runningTimers.first
-    }
-
-    // Recents accumulates everything, but hides the focused one to avoid duplicates.
-    var recents: [TimerItem] {
-        guard let focused = focusedTimer else { return timers }
-        return timers.filter { $0.id != focused.id }
-    }
+    // Inactive presets (most recent first). Insert at 0.
+    var recentTimers: [TimerItem] = []
 
     // MARK: - Actions
 
     func startFromDraft() {
         guard draft.isValid else { return }
-        createAndStartTimer(duration: draft.duration)
-    }
-
-    func startPreset(_ item: TimerItem) {
-        // Reuse the same manager to mimic iOS behavior: preset stays, timer starts again.
-        focusedTimerID = item.id
-        item.manager.setTimer(totalTime: item.configuredDuration)
+        createAndActivateTimer(duration: draft.duration)
     }
 
     func toggle(_ item: TimerItem) {
@@ -78,33 +50,56 @@ final class TimersStore {
         }
     }
 
-    // MARK: - Private
-
-    private func createAndStartTimer(duration: Duration) {
-        let manager = TimerManager(activityHandler: NoopTimerActivityHandler())
-
-        manager.onDidFinish = { [weak self] in
-            self?.ensureFocusIsValid()
-        }
-
-        let item = TimerItem(label: "Timer", configuredDuration: duration, manager: manager)
-        timers.insert(item, at: 0)
-        focusedTimerID = item.id
-
-        manager.setTimer(totalTime: duration)
-        ensureFocusIsValid()
+    func cancel(_ item: TimerItem) {
+        item.manager.cancel()
+        moveToRecents(item)
     }
 
-    private func ensureFocusIsValid() {
-        if !hasRunningTimers {
-            focusedTimerID = nil
-            return
+    // MARK: - Private
+
+    private func startPreset(_ item: TimerItem) {
+        removeFromRecents(item)
+        activate(item)
+    }
+
+    private func createAndActivateTimer(duration: Duration) {
+        let manager = TimerManager(activityHandler: NoopTimerActivityHandler())
+
+        manager.onDidFinish = { [weak self, weak manager] in
+            guard let self, let manager else { return }
+            self.handleTimerDidFinish(manager)
         }
 
-        if let focused = focusedTimer, focused.manager.status != .idle {
-            return
-        }
+        let item = TimerItem(
+            label: "Timer",
+            configuredDuration: duration,
+            manager: manager
+        )
 
-        focusedTimerID = runningTimers.first?.id
+        activate(item)
+    }
+
+    private func activate(_ item: TimerItem) {
+        // Active: append at the end (cheap).
+        activeTimers.append(item)
+
+        // Ensure the manager starts from the preset duration.
+        item.manager.setTimer(totalTime: item.configuredDuration)
+    }
+
+    private func handleTimerDidFinish(_ manager: TimerManager) {
+        guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
+        moveToRecents(item)
+    }
+
+    private func moveToRecents(_ item: TimerItem) {
+        activeTimers.removeAll { $0.id == item.id }
+
+        // Recents: insert at 0.
+        recentTimers.insert(item, at: 0)
+    }
+
+    private func removeFromRecents(_ item: TimerItem) {
+        recentTimers.removeAll { $0.id == item.id }
     }
 }

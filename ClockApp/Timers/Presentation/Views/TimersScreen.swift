@@ -15,34 +15,43 @@ struct TimersScreen: View {
         NavigationStack {
             List {
 
-                // If nothing is running anywhere, show the picker.
-                if !store.hasRunningTimers {
+                // Picker should be visible whenever there are no active timers.
+                if store.activeTimers.isEmpty {
                     Section {
                         PickerHeaderView(draft: $store.draft) {
                             store.startFromDraft()
                         }
-                        .listRowInsets(EdgeInsets())
+                        .listRowInsets(.init())
                         .listRowBackground(Color.clear)
                     }
-                } else if let focused = store.focusedTimer {
-                    // Focused running timer section (same row UI)
+                } else {
+                    // Active timers section (all active timers are "focused")
                     Section {
-                        NavigationLink {
-                            TimerDetailView(item: focused)
-                        } label: {
-                            TimerRowView(
-                                item: focused,
-                                onPrimaryAction: { store.toggle(focused) }
-                            )
+                        ForEach(store.activeTimers) { item in
+                            NavigationLink {
+                                TimerDetailView(
+                                    item: item,
+                                    onCancel: { store.cancel(item) }
+                                )
+                            } label: {
+                                TimerRowView(
+                                    item: item,
+                                    onPrimaryAction: { store.toggle(item) }
+                                )
+                            }
                         }
                     }
                 }
 
-                if !store.recents.isEmpty {
+                // Recents section
+                if !store.recentTimers.isEmpty {
                     Section("Recents") {
-                        ForEach(store.recents) { item in
+                        ForEach(store.recentTimers) { item in
                             NavigationLink {
-                                TimerDetailView(item: item)
+                                TimerDetailView(
+                                    item: item,
+                                    onCancel: { store.cancel(item) }
+                                )
                             } label: {
                                 TimerRowView(
                                     item: item,
