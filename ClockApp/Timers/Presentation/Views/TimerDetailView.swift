@@ -11,6 +11,8 @@ import SwiftUI
 struct TimerDetailView: View {
     let item: TimerItem
 
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         VStack(spacing: 22) {
             configuredDurationText
@@ -36,7 +38,11 @@ struct TimerDetailView: View {
 
             HStack {
                 Button("Cancel") {
+                    // 1. Stop the timer
                     item.manager.cancel()
+
+                    // 2. Close the detail view
+                    dismiss()
                 }
                 .buttonStyle(.bordered)
                 .tint(.gray)
@@ -65,16 +71,24 @@ struct TimerDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    // MARK: - Helpers
+
     private var configuredDurationText: Text {
         Text(
             item.configuredDuration,
-            format: .units(allowed: [.hours, .minutes, .seconds], width: .wide)
+            format: .units(
+                allowed: [.hours, .minutes, .seconds],
+                width: .wide
+            )
         )
         .foregroundStyle(.secondary)
     }
 
     private var remainingTimeText: Text {
-        Text(item.manager.remainingTime, format: .time(pattern: timePattern))
+        Text(
+            item.manager.remainingTime,
+            format: .time(pattern: timePattern)
+        )
     }
 
     private var timePattern: Duration.TimeFormatStyle.Pattern {
