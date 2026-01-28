@@ -11,12 +11,30 @@ import SwiftUI
 struct PickerHeaderView: View {
     @Binding var draft: TimersStore.Draft
     let onStart: () -> Void
+    
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private enum Layout {
         static let pickerHeight: CGFloat = 180
         static let selectionBarHeight: CGFloat = 34
-        static let selectionBarWidth: CGFloat = 310
+        static let selectionBarWidth: CGFloat = 330
         static let selectionBarCornerRadius: CGFloat = 14
+    }
+    
+    private var useCompactUnits: Bool {
+        dynamicTypeSize > .xxxLarge
+    }
+    
+    var hoursTitle: String {
+        useCompactUnits ? "h" : "hours"
+    }
+    
+    var minTitle: String {
+        useCompactUnits ? "m" : "min"
+    }
+    
+    var secTitle: String {
+        useCompactUnits ? "s" : "sec"
     }
 
     var body: some View {
@@ -26,9 +44,9 @@ struct PickerHeaderView: View {
                     .frame(width: Layout.selectionBarWidth)
                 
                 HStack(spacing: 12) {
-                    UnitWheelPicker(unit: "hours", range: 0...23, selection: $draft.hours)
-                    UnitWheelPicker(unit: "min", range: 0...59, selection: $draft.minutes)
-                    UnitWheelPicker(unit: "sec", range: 0...59, selection: $draft.seconds)
+                    UnitWheelPicker(unit: hoursTitle, range: 0...23, selection: $draft.hours)
+                    UnitWheelPicker(unit: minTitle, range: 0...59, selection: $draft.minutes)
+                    UnitWheelPicker(unit: secTitle, range: 0...59, selection: $draft.seconds)
                 }
                 .frame(height: Layout.pickerHeight)
             }
@@ -63,13 +81,16 @@ struct PickerHeaderView: View {
                     
                 }
                 .pickerStyle(.wheel)
+                .frame(width: 60, alignment: .leading)
+                
                 
                 Text(unit)
                     .font(.headline.bold())
                     .foregroundStyle(.primary)
-                    .frame(width: 50, alignment: .leading)
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility3)
+                    .frame(width: 60, alignment: .leading)
             }
-            .frame(width: 100, height: 100)
+            .frame(width: 100, height: 150)
         }
     }
 
