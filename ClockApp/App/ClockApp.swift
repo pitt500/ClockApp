@@ -1,5 +1,5 @@
 //
-//  ClockAppApp.swift
+//  ClockApp.swift
 //  ClockApp
 //
 //  Created by Pedro Rojas on 20/01/26.
@@ -8,10 +8,11 @@
 import SwiftUI
 
 @main
-struct ClockAppApp: App {
+struct ClockApp: App {
     var body: some Scene {
         WindowGroup {
             TimersScreen()
+                .preferredColorScheme(.dark)
         }
     }
 }
