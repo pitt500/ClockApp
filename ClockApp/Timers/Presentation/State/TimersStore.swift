@@ -102,7 +102,10 @@ final class TimersStore {
     }
     
     private func insertIntoRecents(_ item: TimerItem) {
+        // Recents should never contain duplicates.
         recentTimers.removeAll { $0.id == item.id }
+
+        // Recents: insert at the beginning (most recent first).
         recentTimers.insert(item, at: 0)
     }
 }
