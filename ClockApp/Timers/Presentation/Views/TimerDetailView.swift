@@ -13,6 +13,10 @@ struct TimerDetailView: View {
     let onCancel: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    
+    private enum Layout {
+        static let lineWidth: CGFloat = 10
+    }
 
     var body: some View {
         VStack(spacing: 22) {
@@ -20,16 +24,16 @@ struct TimerDetailView: View {
 
             ZStack {
                 Circle()
-                    .stroke(.secondary.opacity(0.18), lineWidth: 14)
+                    .stroke(.secondary.opacity(0.18), lineWidth: Layout.lineWidth)
 
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
                         .orange,
-                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                        style: StrokeStyle(lineWidth: Layout.lineWidth, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .scaleEffect(x: -1, y: 1)
+                    .scaleEffect(x: 1, y: 1)
 
                 remainingTimeText
                     .font(.system(size: 84, weight: .light, design: .rounded))
@@ -98,5 +102,22 @@ struct TimerDetailView: View {
         case .paused: return "Resume"
         case .idle: return "Start"
         }
+    }
+}
+
+#Preview {
+    @Previewable @State var manager = TimerManager()
+    
+    TimerDetailView(
+        item: TimerItem(
+            label: "Timer",
+            configuredDuration: .seconds(30),
+            manager: manager
+        ),
+        onCancel: {}
+    )
+    .onAppear {
+        manager.setTimer(totalTime: .seconds(30))
+        manager.start()
     }
 }
