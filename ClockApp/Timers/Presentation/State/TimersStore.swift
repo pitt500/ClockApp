@@ -94,12 +94,15 @@ final class TimersStore {
 
     private func moveToRecents(_ item: TimerItem) {
         activeTimers.removeAll { $0.id == item.id }
-
-        // Recents: insert at 0.
-        recentTimers.insert(item, at: 0)
+        insertIntoRecents(item)
     }
 
     private func removeFromRecents(_ item: TimerItem) {
         recentTimers.removeAll { $0.id == item.id }
+    }
+    
+    private func insertIntoRecents(_ item: TimerItem) {
+        recentTimers.removeAll { $0.id == item.id }
+        recentTimers.insert(item, at: 0)
     }
 }
