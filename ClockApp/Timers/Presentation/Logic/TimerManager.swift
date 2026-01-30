@@ -15,9 +15,9 @@ final class TimerManager {
         case paused
     }
     
-    var status: Status = .idle
-    var totalTime: Duration = .seconds(0)       // Preset duration, always kept
-    var remainingTime: Duration = .seconds(0)   // Countdown value
+    private(set) var status: Status = .idle
+    private(set) var totalTime: Duration = .seconds(0)       // Preset duration, always kept
+    private(set) var remainingTime: Duration = .seconds(0)   // Countdown value
 
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
