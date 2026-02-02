@@ -19,13 +19,16 @@ final class TimerManager {
     private(set) var totalTime: Duration = .seconds(0)       // Preset duration, always kept
     private(set) var remainingTime: Duration = .seconds(0)   // Countdown value
 
-    // When running, this marks the expected end time.
+    // When running, this marks the expected end time (includes a small grace period).
     private(set) var endDate: Date?
+
+    // Small extra time to keep 0:00 visible before firing onDidFinish.
+    private(set) var finishGrace: TimeInterval = 0.50
 
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
-    // Fired only when the timer reaches 0 naturally.
+    // Fired only when the timer reaches 0 naturally (after grace).
     var onDidFinish: (() -> Void)?
 
     init(activityHandler: TimerActivityHandling? = nil) {
@@ -44,7 +47,8 @@ final class TimerManager {
         guard remainingTime > .seconds(0) else { return }
 
         status = .running
-        endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+
+        recalculateEndDate()
 
         activityHandler?.start(for: self, title: "Timer Demo")
         startUnderlyingTimer()
@@ -53,8 +57,8 @@ final class TimerManager {
     func pause() {
         guard status == .running else { return }
 
-        // Freeze remainingTime based on endDate.
-        let secondsLeft = max(0, Int(ceil((endDate ?? Date()).timeIntervalSinceNow)))
+        // Freeze remainingTime using the display time (endDate minus grace).
+        let secondsLeft = secondsLeftExcludingGrace(at: Date.now)
         remainingTime = .seconds(secondsLeft)
 
         status = .paused
@@ -68,16 +72,22 @@ final class TimerManager {
         guard remainingTime > .seconds(0) else { return }
 
         status = .running
-        endDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+
+        recalculateEndDate()
 
         activityHandler?.update(remainingTime: remainingTime, isPaused: false)
         startUnderlyingTimer()
     }
+    
+    func recalculateEndDate() {
+        let seconds = TimeInterval(remainingSeconds)
+        endDate = Date().addingTimeInterval(seconds + finishGrace)
+    }
 
     // User-driven stop. Does NOT fire onDidFinish.
-    // Requirement: when idle after cancel, the row should show the original preset.
     func cancel() {
-        stopInternal(resetRemainingToTotal: true)
+        stopInternal()
+        resetToTotalTime()
     }
 
     // Called by the Store after it has moved the timer to Recents.
@@ -92,38 +102,42 @@ final class TimerManager {
     }
 
     private func finishNaturally() {
-        // Stop the underlying timer and show 0 as a stable UI state.
-        stopInternal(resetRemainingToTotal: false)
+        stopInternal()
         remainingTime = .seconds(0)
-
         onDidFinish?()
     }
 
-    private func stopInternal(resetRemainingToTotal: Bool) {
+    private func stopInternal() {
         status = .idle
         timer?.invalidate()
         timer = nil
-
         endDate = nil
 
-        if resetRemainingToTotal {
-            remainingTime = totalTime
-        }
-
         activityHandler?.end()
+    }
+
+    private func secondsLeftExcludingGrace(at date: Date) -> Int {
+        guard let endDate else { return max(0, Int(remainingTime.components.seconds)) }
+
+        // Display countdown ends at (endDate - finishGrace).
+        let displayEnd = endDate.addingTimeInterval(-finishGrace)
+        let interval = displayEnd.timeIntervalSince(date)
+
+        // Use ceil so the countdown does not skip numbers at the beginning.
+        return max(0, Int(ceil(interval)))
     }
 
     private func tick() async {
         guard status == .running else { return }
         guard let endDate else { return }
 
-        let secondsLeft = max(0, Int(ceil(endDate.timeIntervalSinceNow)))
+        // Update the displayed remainingTime (can be 0 during the grace window).
+        let secondsLeft = secondsLeftExcludingGrace(at: Date.now)
+        remainingTime = .seconds(secondsLeft)
+        activityHandler?.update(remainingTime: remainingTime, isPaused: false)
 
-        if secondsLeft > 0 {
-            remainingTime = .seconds(secondsLeft)
-            activityHandler?.update(remainingTime: remainingTime, isPaused: false)
-        } else {
-            // The moment we cross 0, finish naturally and keep remainingTime at 0 briefly.
+        // Finish only after the grace window truly ends.
+        if Date.now >= endDate {
             finishNaturally()
         }
     }

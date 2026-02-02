@@ -101,18 +101,10 @@ final class TimersStore {
     private func handleTimerDidFinish(_ manager: TimerManager) {
         guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
 
-        // At this point:
-        // - status == .idle
-        // - remainingTime == 0
-        // We keep this state briefly so the detail view can show "0" as feedback.
-        DispatchQueue.main.asyncAfter(deadline: .now() + Layout.naturalFinishFeedbackDelay) { [weak self] in
-            guard let self else { return }
+        moveToRecents(item)
 
-            self.moveToRecents(item)
-
-            // Reset so the recents row shows the preset duration.
-            item.manager.resetToTotalTime()
-        }
+        // Reset so the recents row shows the preset duration.
+        item.manager.resetToTotalTime()
     }
 
     // MARK: - Helpers

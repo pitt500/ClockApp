@@ -35,23 +35,26 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
 
     func progress(at date: Date) -> Double {
         let totalSeconds = max(1.0, Double(item.manager.totalTime.components.seconds))
+        let totalDuration = totalSeconds + item.manager.finishGrace
 
         switch item.manager.status {
-        case .running:
+        case .running, .paused:
             // Continuous progress while running.
             if let endDate = item.manager.endDate {
                 let remaining = max(0.0, endDate.timeIntervalSince(date))
-                return remaining / totalSeconds
+                return remaining / totalDuration
             } else {
                 // Fallback if endDate is missing.
-                let remaining = max(0.0, Double(item.manager.remainingTime.components.seconds))
-                return remaining / totalSeconds
+                let remainingSeconds = max(0.0, Double(item.manager.remainingTime.components.seconds))
+                let remaining = remainingSeconds == 0 ? 0.0 : (remainingSeconds + item.manager.finishGrace)
+                return remaining / totalDuration
             }
-
-        case .paused, .idle:
+            
+        case .idle:
             // Stable progress when paused/idle.
-            let remaining = max(0.0, Double(item.manager.remainingTime.components.seconds))
-            return remaining / totalSeconds
+            let remainingSeconds = max(0.0, Double(item.manager.remainingTime.components.seconds))
+            let remaining = remainingSeconds == 0 ? 0.0 : (remainingSeconds + item.manager.finishGrace)
+            return remaining / totalDuration
         }
     }
 
@@ -75,10 +78,8 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
         switch item.manager.status {
         case .running:
             item.manager.pause()
-
         case .paused:
             item.manager.resume()
-
         case .idle:
             // Important: route through the Store so the timer is activated and tracked correctly.
             onStartRequested(item)
