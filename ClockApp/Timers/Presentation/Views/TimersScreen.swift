@@ -30,7 +30,12 @@ struct TimersScreen: View {
                         ForEach(store.activeTimers) { item in
                             NavigationLink {
                                 TimerDetailView(
-                                    item: item,
+                                    provider: TimerDetailProviderFromManager(
+                                        item: item,
+                                        onStartRequested: { item in
+                                            store.activate(item)
+                                        }
+                                    ),
                                     onCancel: { store.cancel(item) }
                                 )
                             } label: {
@@ -49,7 +54,12 @@ struct TimersScreen: View {
                         ForEach(store.recentTimers) { item in
                             NavigationLink {
                                 TimerDetailView(
-                                    item: item,
+                                    provider: TimerDetailProviderFromManager(
+                                        item: item,
+                                        onStartRequested: { item in
+                                            store.activate(item)
+                                        }
+                                    ),
                                     onCancel: { store.cancel(item) }
                                 )
                             } label: {

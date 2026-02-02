@@ -107,7 +107,7 @@ struct PickerHeaderView: View {
 #Preview("Clock-style Picker Header") {
     @Previewable @State var draft = TimersStore.Draft(hours: 0, minutes: 1, seconds: 20)
 
-    return NavigationStack {
+    NavigationStack {
         List {
             Section {
                 PickerHeaderView(draft: $draft) {}
