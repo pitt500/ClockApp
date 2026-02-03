@@ -20,28 +20,26 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
         VStack(spacing: 22) {
             configuredDurationText
 
-            TimelineView(.animation) { context in
-                let progress = provider.progress(at: context.date)
+            ZStack {
+                Circle()
+                    .stroke(.secondary.opacity(0.18), lineWidth: lineWidth)
 
-                ZStack {
+                TimelineView(.animation) { context in
                     Circle()
-                        .stroke(.secondary.opacity(0.18), lineWidth: lineWidth)
-
-                    Circle()
-                        .trim(from: 0, to: progress)
+                        .trim(from: 0, to: provider.progress(at: context.date))
                         .stroke(
                             .orange,
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                         )
                         .rotationEffect(.degrees(-90))
                         .scaleEffect(x: 1, y: 1)
-
-                    remainingTimeText
-                        .font(.system(size: 84, weight: .light, design: .rounded))
-                        .monospacedDigit()
                 }
-                .frame(width: 320, height: 320)
+
+                remainingTimeText
+                    .font(.system(size: 84, weight: .light, design: .rounded))
+                    .monospacedDigit()
             }
+            .frame(width: 320, height: 320)
 
             HStack {
                 Button("Cancel") {
@@ -83,21 +81,5 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
     private var timePattern: Duration.TimeFormatStyle.Pattern {
         let seconds = Int(provider.configuredDuration.components.seconds)
         return seconds >= 3600 ? .hourMinuteSecond : .minuteSecond
-    }
-}
-
-
-#Preview {
-    @Previewable @State var provider = TimerDetailProviderFromManager(
-        item: TimerItem(
-            label: "Timer",
-            configuredDuration: .seconds(10),
-            manager: TimerManager()
-        ),
-        onStartRequested: {_ in }
-    )
-
-    return NavigationStack {
-        TimerDetailView(provider: provider, onCancel: {})
     }
 }

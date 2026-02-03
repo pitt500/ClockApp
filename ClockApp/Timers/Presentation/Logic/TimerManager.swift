@@ -25,6 +25,10 @@ final class TimerManager {
     // Small extra time to keep 0:00 visible before firing onDidFinish.
     private(set) var finishGrace: TimeInterval = 0.50
 
+    // Source of truth for progress (will include grace).
+    private(set) var totalInterval: TimeInterval = 0
+    private(set) var remainingInterval: TimeInterval = 0
+
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
@@ -39,49 +43,59 @@ final class TimerManager {
 
     func setTimer(totalTime: Duration) {
         self.totalTime = totalTime
+        self.totalInterval = max(0, TimeInterval(totalTime.components.seconds))
+        self.remainingInterval = self.totalInterval + finishGrace
+
+        // UI starts at preset seconds.
         self.remainingTime = totalTime
+
         start()
     }
 
     func start() {
-        guard remainingTime > .seconds(0) else { return }
+        guard remainingInterval > 0 else { return }
 
         status = .running
-
-        recalculateEndDate()
+        endDate = Date.now.addingTimeInterval(remainingInterval)
 
         activityHandler?.start(for: self, title: "Timer Demo")
+
+        // Sync one update now so UI is consistent immediately.
+        syncRemainingTime(now: Date.now)
+
         startUnderlyingTimer()
     }
 
     func pause() {
         guard status == .running else { return }
+        guard let endDate else { return }
 
-        // Freeze remainingTime using the display time (endDate minus grace).
-        let secondsLeft = secondsLeftExcludingGrace(at: Date.now)
-        remainingTime = .seconds(secondsLeft)
+        // Freeze precise remainingInterval.
+        remainingInterval = max(0, endDate.timeIntervalSince(Date.now))
 
         status = .paused
-        endDate = nil
+        self.endDate = nil
 
         timer?.invalidate()
+        timer = nil
+
+        // Keep UI text stable at the current derived seconds.
+        syncRemainingTime(now: Date.now)
+
         activityHandler?.update(remainingTime: remainingTime, isPaused: true)
     }
 
     func resume() {
-        guard remainingTime > .seconds(0) else { return }
+        guard remainingInterval > 0 else { return }
 
         status = .running
+        endDate = Date.now.addingTimeInterval(remainingInterval)
 
-        recalculateEndDate()
+        // Sync one update now so it does not jump.
+        syncRemainingTime(now: Date.now)
 
         activityHandler?.update(remainingTime: remainingTime, isPaused: false)
         startUnderlyingTimer()
-    }
-    
-    func recalculateEndDate() {
-        let seconds = TimeInterval(remainingSeconds)
-        endDate = Date().addingTimeInterval(seconds + finishGrace)
     }
 
     // User-driven stop. Does NOT fire onDidFinish.
@@ -93,17 +107,15 @@ final class TimerManager {
     // Called by the Store after it has moved the timer to Recents.
     func resetToTotalTime() {
         remainingTime = totalTime
+        remainingInterval = totalInterval + finishGrace
     }
 
     // MARK: - Private
 
-    private var remainingSeconds: Int {
-        max(0, Int(remainingTime.components.seconds))
-    }
-
     private func finishNaturally() {
         stopInternal()
         remainingTime = .seconds(0)
+        remainingInterval = 0
         onDidFinish?()
     }
 
@@ -116,28 +128,44 @@ final class TimerManager {
         activityHandler?.end()
     }
 
-    private func secondsLeftExcludingGrace(at date: Date) -> Int {
-        guard let endDate else { return max(0, Int(remainingTime.components.seconds)) }
+    /// Derives a discrete, whole-second value from a continuous time interval.
+    /// - Starts from the real remaining interval.
+    /// - Subtracts the internal grace offset.
+    /// - Collapses sub-second precision into whole seconds.
+    /// - Ensures the countdown does not advance early or visually lag behind.
+    private func remainingDiscreteSeconds() -> Int {
+        let uiInterval = max(0, remainingInterval - finishGrace)
+        return Int(ceil(uiInterval))
+    }
 
-        // Display countdown ends at (endDate - finishGrace).
-        let displayEnd = endDate.addingTimeInterval(-finishGrace)
-        let interval = displayEnd.timeIntervalSince(date)
+    private func syncRemainingTime(now: Date) {
+        // Update remainingInterval from endDate if running.
+        if status == .running, let endDate {
+            remainingInterval = max(0, endDate.timeIntervalSince(now))
+        }
 
-        // Use ceil so the countdown does not skip numbers at the beginning.
-        return max(0, Int(ceil(interval)))
+        let seconds = remainingDiscreteSeconds()
+        let next = Duration.seconds(seconds)
+
+        // Avoid extra publishes.
+        if remainingTime != next {
+            remainingTime = next
+        }
     }
 
     private func tick() async {
         guard status == .running else { return }
         guard let endDate else { return }
 
-        // Update the displayed remainingTime (can be 0 during the grace window).
-        let secondsLeft = secondsLeftExcludingGrace(at: Date.now)
-        remainingTime = .seconds(secondsLeft)
+        let now = Date.now
+        remainingInterval = max(0, endDate.timeIntervalSince(now))
+
+        // Update UI text projection (seconds) at most when it changes.
+        syncRemainingTime(now: now)
         activityHandler?.update(remainingTime: remainingTime, isPaused: false)
 
-        // Finish only after the grace window truly ends.
-        if Date.now >= endDate {
+        // Finish only after grace truly ends.
+        if now >= endDate {
             finishNaturally()
         }
     }
@@ -145,7 +173,8 @@ final class TimerManager {
     private func startUnderlyingTimer() {
         timer?.invalidate()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        // Small cadence to avoid "skipping" due to drift, but UI updates only on second changes.
+        timer = Timer.scheduledTimer(withTimeInterval: 0.10, repeats: true) { [weak self] _ in
             guard let self else { return }
             Task { await self.tick() }
         }

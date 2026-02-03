@@ -34,28 +34,24 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
     }
 
     func progress(at date: Date) -> Double {
-        let totalSeconds = max(1.0, Double(item.manager.totalTime.components.seconds))
-        let totalDuration = totalSeconds + item.manager.finishGrace
+        let total = max(1.0, item.manager.totalInterval + item.manager.finishGrace)
 
+        let remaining: TimeInterval
         switch item.manager.status {
-        case .running, .paused:
-            // Continuous progress while running.
+        case .running:
             if let endDate = item.manager.endDate {
-                let remaining = max(0.0, endDate.timeIntervalSince(date))
-                return remaining / totalDuration
+                remaining = max(0.0, endDate.timeIntervalSince(date))
             } else {
-                // Fallback if endDate is missing.
-                let remainingSeconds = max(0.0, Double(item.manager.remainingTime.components.seconds))
-                let remaining = remainingSeconds == 0 ? 0.0 : (remainingSeconds + item.manager.finishGrace)
-                return remaining / totalDuration
+                // Should not happen, but keep it stable.
+                remaining = max(0.0, item.manager.remainingInterval)
             }
-            
-        case .idle:
-            // Stable progress when paused/idle.
-            let remainingSeconds = max(0.0, Double(item.manager.remainingTime.components.seconds))
-            let remaining = remainingSeconds == 0 ? 0.0 : (remainingSeconds + item.manager.finishGrace)
-            return remaining / totalDuration
+
+        case .paused, .idle:
+            // Stable ring while paused/idle.
+            remaining = max(0.0, item.manager.remainingInterval)
         }
+
+        return remaining / total
     }
 
     var actionTitle: String {
@@ -81,7 +77,6 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
         case .paused:
             item.manager.resume()
         case .idle:
-            // Important: route through the Store so the timer is activated and tracked correctly.
             onStartRequested(item)
         }
     }
