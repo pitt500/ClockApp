@@ -43,7 +43,6 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
 
             HStack {
                 Button("Cancel") {
-                    provider.cancel()
                     onCancel()
                     dismiss()
                 }

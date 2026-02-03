@@ -66,10 +66,6 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
         item.manager.status == .paused ? .green : .orange
     }
 
-    func cancel() {
-        item.manager.cancel()
-    }
-
     func primaryAction() {
         switch item.manager.status {
         case .running:

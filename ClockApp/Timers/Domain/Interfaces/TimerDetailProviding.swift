@@ -16,7 +16,6 @@ protocol TimerDetailProviding: AnyObject {
     var actionTitle: String { get }
     var actionTint: Color { get }
 
-    func cancel()
     func primaryAction()
 }
 
