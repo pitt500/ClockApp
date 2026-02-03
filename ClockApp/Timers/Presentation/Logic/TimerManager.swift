@@ -174,13 +174,13 @@ final class TimerManager {
         timer?.invalidate()
 
         // Small cadence to avoid "skipping" due to drift, but UI updates only on second changes.
-        timer = Timer.scheduledTimer(withTimeInterval: 0.10, repeats: true) { [weak self] _ in
+        timer = Timer(timeInterval: 0.10, repeats: true) { [weak self] _ in
             guard let self else { return }
             Task { await self.tick() }
         }
 
         // RunLoop anchor for the RunLoop explanation video.
-        RunLoop.current.add(timer!, forMode: .common)
+        RunLoop.main.add(timer!, forMode: .common)
     }
 
     deinit {
