@@ -18,24 +18,24 @@ final class TimerManager {
     private(set) var status: Status = .idle
     private(set) var totalTimeInSeconds: Duration = .seconds(0)
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
-    private(set) var endDate: Date?
-    private(set) var finishGrace: TimeInterval = 0.50
     
+    private var endDate: Date?
+    private var finishGrace: TimeInterval = 0.50
     private var remainingTimeWhenNotRunning: TimeInterval = 0
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
-    var totalTimeInterval: TimeInterval {
-        max(0, totalTimeInSeconds.toTimeInterval() + finishGrace)
-    }
-
-    var onDidFinish: (() -> Void)?
 
     init(activityHandler: TimerActivityHandling? = nil) {
         self.activityHandler = activityHandler
     }
 
     // MARK: - Public API
+    var totalTimeInterval: TimeInterval {
+        max(0, totalTimeInSeconds.toTimeInterval() + finishGrace)
+    }
+
+    var onDidFinish: (() -> Void)?
 
     func setTimer(totalTime: Duration) {
         totalTimeInSeconds = totalTime
