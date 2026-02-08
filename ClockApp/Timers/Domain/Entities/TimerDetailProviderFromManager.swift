@@ -34,23 +34,8 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
     }
 
     func progress(at date: Date) -> Double {
-        let total = max(1.0, item.manager.totalTimeInterval + item.manager.finishGrace)
-
-        let remaining: TimeInterval
-        switch item.manager.status {
-        case .running:
-            if let endDate = item.manager.endDate {
-                remaining = max(0.0, endDate.timeIntervalSince(date))
-            } else {
-                // Should not happen, but keep it stable.
-                remaining = max(0.0, item.manager.remainingInterval)
-            }
-
-        case .paused, .idle:
-            // Stable ring while paused/idle.
-            remaining = max(0.0, item.manager.remainingInterval)
-        }
-
+        let total = max(1.0, item.manager.totalTimeInterval)
+        let remaining = item.manager.remainingInterval(at: date)
         return remaining / total
     }
 

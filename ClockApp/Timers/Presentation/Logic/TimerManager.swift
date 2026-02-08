@@ -20,17 +20,14 @@ final class TimerManager {
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
     private(set) var endDate: Date?
     private(set) var finishGrace: TimeInterval = 0.50
-
-    var totalTimeInterval: TimeInterval { totalTimeInSeconds.toTimeInterval()
-    }
-
-    var remainingInterval: TimeInterval {
-        remainingInterval(now: Date.now)
-    }
-
+    
     private var remainingTimeWhenNotRunning: TimeInterval = 0
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
+
+    var totalTimeInterval: TimeInterval {
+        max(0, totalTimeInSeconds.toTimeInterval() + finishGrace)
+    }
 
     var onDidFinish: (() -> Void)?
 
@@ -42,7 +39,7 @@ final class TimerManager {
 
     func setTimer(totalTime: Duration) {
         totalTimeInSeconds = totalTime
-        remainingTimeWhenNotRunning = totalTimeInterval + finishGrace
+        remainingTimeWhenNotRunning = totalTimeInSeconds.toTimeInterval() + finishGrace
         remainingTimeInSeconds = totalTimeInSeconds
         start()
     }
@@ -89,7 +86,14 @@ final class TimerManager {
 
     func resetToTotalTime() {
         remainingTimeInSeconds = totalTimeInSeconds
-        remainingTimeWhenNotRunning = totalTimeInterval + finishGrace
+        remainingTimeWhenNotRunning = totalTimeInSeconds.toTimeInterval() + finishGrace
+    }
+    
+    func remainingInterval(at date: Date) -> TimeInterval {
+        if status == .running, let endDate {
+            return max(0, endDate.timeIntervalSince(date))
+        }
+        return max(0, remainingTimeWhenNotRunning)
     }
 
     // MARK: - Private
@@ -115,15 +119,8 @@ final class TimerManager {
         startUnderlyingTimer()
     }
 
-    private func remainingInterval(now: Date) -> TimeInterval {
-        if status == .running, let endDate {
-            return max(0, endDate.timeIntervalSince(now))
-        }
-        return max(0, remainingTimeWhenNotRunning)
-    }
-
     private func projectedLabelSeconds(now: Date) -> Int {
-        let interval = remainingInterval(now: now)
+        let interval = remainingInterval(at: now)
         let projected = max(0, interval - finishGrace)
         return Int(ceil(projected))
     }
