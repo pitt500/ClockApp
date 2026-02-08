@@ -27,7 +27,7 @@ final class TimerManager {
         remainingIntervalIncludingGrace(now: Date.now)
     }
 
-    private var storedRemainingInterval: TimeInterval = 0
+    private var timeRemainingInPause: TimeInterval = 0
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
@@ -41,17 +41,17 @@ final class TimerManager {
 
     func setTimer(totalTime: Duration) {
         totalTimeInSeconds = totalTime
-        storedRemainingInterval = totalTimeInterval + finishGrace
+        timeRemainingInPause = totalTimeInterval + finishGrace
         remainingTimeInSeconds = totalTimeInSeconds
         start()
     }
 
     func start() {
         guard status == .idle else { return }
-        guard storedRemainingInterval > 0 else { return }
+        guard timeRemainingInPause > 0 else { return }
 
         enterRunning(
-            intervalIncludingGrace: storedRemainingInterval,
+            intervalIncludingGrace: timeRemainingInPause,
             activity: .start(title: "Timer Demo")
         )
     }
@@ -60,7 +60,7 @@ final class TimerManager {
         guard status == .running, let endDate else { return }
 
         let now = Date.now
-        storedRemainingInterval = max(0, endDate.timeIntervalSince(now))
+        timeRemainingInPause = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
         self.endDate = nil
@@ -73,10 +73,10 @@ final class TimerManager {
 
     func resume() {
         guard status == .paused else { return }
-        guard storedRemainingInterval > 0 else { return }
+        guard timeRemainingInPause > 0 else { return }
 
         enterRunning(
-            intervalIncludingGrace: storedRemainingInterval,
+            intervalIncludingGrace: timeRemainingInPause,
             activity: .update(isPaused: false)
         )
     }
@@ -88,7 +88,7 @@ final class TimerManager {
 
     func resetToTotalTime() {
         remainingTimeInSeconds = totalTimeInSeconds
-        storedRemainingInterval = totalTimeInterval + finishGrace
+        timeRemainingInPause = totalTimeInterval + finishGrace
     }
 
     // MARK: - Private
@@ -118,7 +118,7 @@ final class TimerManager {
         if status == .running, let endDate {
             return max(0, endDate.timeIntervalSince(now))
         }
-        return max(0, storedRemainingInterval)
+        return max(0, timeRemainingInPause)
     }
 
     private func projectedLabelSeconds(now: Date) -> Int {
@@ -150,7 +150,7 @@ final class TimerManager {
     private func finishNaturally() {
         stopInternal()
         remainingTimeInSeconds = .seconds(0)
-        storedRemainingInterval = 0
+        timeRemainingInPause = 0
         onDidFinish?()
     }
 
