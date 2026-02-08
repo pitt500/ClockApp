@@ -30,11 +30,11 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
     }
 
     var remainingDuration: Duration {
-        item.manager.remainingTime
+        item.manager.remainingTimeInSeconds
     }
 
     func progress(at date: Date) -> Double {
-        let total = max(1.0, item.manager.totalInterval + item.manager.finishGrace)
+        let total = max(1.0, item.manager.totalTimeInterval + item.manager.finishGrace)
 
         let remaining: TimeInterval
         switch item.manager.status {

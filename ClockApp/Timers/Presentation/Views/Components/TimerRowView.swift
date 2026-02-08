@@ -32,8 +32,8 @@ struct TimerRowView: View {
     // If idle, show the preset (totalTime). If running/paused, show remainingTime.
     private var mainTimeText: Text {
         let durationToShow: Duration = (item.manager.status == .idle)
-            ? item.manager.totalTime
-            : item.manager.remainingTime
+            ? item.manager.totalTimeInSeconds
+            : item.manager.remainingTimeInSeconds
 
         return Text(durationToShow, format: .time(pattern: timePattern(for: durationToShow)))
             .monospacedDigit()

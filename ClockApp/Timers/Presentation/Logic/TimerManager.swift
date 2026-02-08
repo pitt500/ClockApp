@@ -16,19 +16,38 @@ final class TimerManager {
     }
 
     private(set) var status: Status = .idle
-    private(set) var totalTime: Duration = .seconds(0)       // Preset duration, always kept
-    private(set) var remainingTime: Duration = .seconds(0)   // Countdown value
 
-    // When running, this marks the expected end time (includes a small grace period).
+    // Preset duration (without grace). This is the configured value used by Recents.
+    private(set) var totalTimeInSeconds: Duration = .seconds(0)
+
+    // Discrete, whole-second projection for the label.
+    private(set) var remainingTimeInSeconds: Duration = .seconds(0)
+
+    // When running, this marks the expected end time (includes grace).
     private(set) var endDate: Date?
 
     // Small extra time to keep 0:00 visible before firing onDidFinish.
     private(set) var finishGrace: TimeInterval = 0.50
 
-    // Source of truth for progress (will include grace).
-    private(set) var totalInterval: TimeInterval = 0
-    private(set) var remainingInterval: TimeInterval = 0
+    // Source-of-truth for progress, expressed as TimeInterval.
+    // Kept for compatibility with existing views/providers, but derived from totalTime.
+    var totalTimeInterval: TimeInterval { totalTimeInSeconds.toTimeInterval()
+    }
 
+    // Continuous remaining interval INCLUDING grace.
+    // When running: derived from endDate - now.
+    // When paused/idle: stable snapshot stored in storedRemainingInterval.
+    var remainingInterval: TimeInterval {
+        switch status {
+        case .running:
+            guard let endDate else { return 0 }
+            return max(0, endDate.timeIntervalSince(Date.now))
+        case .paused, .idle:
+            return max(0, storedRemainingInterval)
+        }
+    }
+
+    private var storedRemainingInterval: TimeInterval = 0
     private var timer: Timer?
     private let activityHandler: TimerActivityHandling?
 
@@ -42,21 +61,23 @@ final class TimerManager {
     // MARK: - Public API
 
     func setTimer(totalTime: Duration) {
-        self.totalTime = totalTime
-        self.totalInterval = max(0, TimeInterval(totalTime.components.seconds))
-        self.remainingInterval = self.totalInterval + finishGrace
-
-        // UI starts at preset seconds.
-        self.remainingTime = totalTime
+        self.totalTimeInSeconds = totalTime
+        
+        // Internal continuous interval starts at preset + grace.
+        storedRemainingInterval = totalTimeInterval + finishGrace
+        
+        // Label starts at preset seconds (without grace).
+        remainingTimeInSeconds = totalTimeInSeconds
 
         start()
     }
 
     func start() {
-        guard remainingInterval > 0 else { return }
+        guard status == .idle else { return }
+        guard storedRemainingInterval > 0 else { return }
 
         status = .running
-        endDate = Date.now.addingTimeInterval(remainingInterval)
+        endDate = Date.now.addingTimeInterval(storedRemainingInterval)
 
         activityHandler?.start(for: self, title: "Timer Demo")
 
@@ -70,8 +91,10 @@ final class TimerManager {
         guard status == .running else { return }
         guard let endDate else { return }
 
-        // Freeze precise remainingInterval.
-        remainingInterval = max(0, endDate.timeIntervalSince(Date.now))
+        let now = Date.now
+
+        // Freeze precise remaining interval (includes grace).
+        storedRemainingInterval = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
         self.endDate = nil
@@ -79,22 +102,23 @@ final class TimerManager {
         timer?.invalidate()
         timer = nil
 
-        // Keep UI text stable at the current derived seconds.
-        syncRemainingTime(now: Date.now)
+        // Keep label stable at the current derived seconds.
+        syncRemainingTime(now: now)
 
-        activityHandler?.update(remainingTime: remainingTime, isPaused: true)
+        activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: true)
     }
 
     func resume() {
-        guard remainingInterval > 0 else { return }
+        guard status == .paused else { return }
+        guard storedRemainingInterval > 0 else { return }
 
         status = .running
-        endDate = Date.now.addingTimeInterval(remainingInterval)
+        endDate = Date.now.addingTimeInterval(storedRemainingInterval)
 
         // Sync one update now so it does not jump.
         syncRemainingTime(now: Date.now)
 
-        activityHandler?.update(remainingTime: remainingTime, isPaused: false)
+        activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: false)
         startUnderlyingTimer()
     }
 
@@ -106,16 +130,15 @@ final class TimerManager {
 
     // Called by the Store after it has moved the timer to Recents.
     func resetToTotalTime() {
-        remainingTime = totalTime
-        remainingInterval = totalInterval + finishGrace
+        remainingTimeInSeconds = totalTimeInSeconds
+        storedRemainingInterval = totalTimeInSeconds.toTimeInterval() + finishGrace
     }
 
     // MARK: - Private
-
     private func finishNaturally() {
         stopInternal()
-        remainingTime = .seconds(0)
-        remainingInterval = 0
+        remainingTimeInSeconds = .seconds(0)
+        storedRemainingInterval = 0
         onDidFinish?()
     }
 
@@ -129,27 +152,34 @@ final class TimerManager {
     }
 
     /// Derives a discrete, whole-second value from a continuous time interval.
-    /// - Starts from the real remaining interval.
+    /// - Starts from the real remaining interval (includes grace).
     /// - Subtracts the internal grace offset.
     /// - Collapses sub-second precision into whole seconds.
     /// - Ensures the countdown does not advance early or visually lag behind.
-    private func remainingDiscreteSeconds() -> Int {
-        let uiInterval = max(0, remainingInterval - finishGrace)
-        return Int(ceil(uiInterval))
+    private func remainingDiscreteSeconds(now: Date) -> Int {
+        let interval: TimeInterval
+        switch status {
+        case .running:
+            if let endDate {
+                interval = max(0, endDate.timeIntervalSince(now))
+            } else {
+                interval = 0
+            }
+        case .paused, .idle:
+            interval = max(0, storedRemainingInterval)
+        }
+
+        let projected = max(0, interval - finishGrace)
+        return Int(ceil(projected))
     }
 
     private func syncRemainingTime(now: Date) {
-        // Update remainingInterval from endDate if running.
-        if status == .running, let endDate {
-            remainingInterval = max(0, endDate.timeIntervalSince(now))
-        }
-
-        let seconds = remainingDiscreteSeconds()
-        let next = Duration.seconds(seconds)
+        let seconds = remainingDiscreteSeconds(now: now)
+        let next = Duration.seconds(Int64(seconds))
 
         // Avoid extra publishes.
-        if remainingTime != next {
-            remainingTime = next
+        if remainingTimeInSeconds != next {
+            remainingTimeInSeconds = next
         }
     }
 
@@ -158,11 +188,10 @@ final class TimerManager {
         guard let endDate else { return }
 
         let now = Date.now
-        remainingInterval = max(0, endDate.timeIntervalSince(now))
 
-        // Update UI text projection (seconds) at most when it changes.
+        // Update label projection (seconds) at most when it changes.
         syncRemainingTime(now: now)
-        activityHandler?.update(remainingTime: remainingTime, isPaused: false)
+        activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: false)
 
         // Finish only after grace truly ends.
         if now >= endDate {
@@ -185,5 +214,11 @@ final class TimerManager {
 
     deinit {
         timer?.invalidate()
+    }
+}
+
+extension Duration {
+    func toTimeInterval() -> TimeInterval {
+        max(0, TimeInterval(self.components.seconds))
     }
 }
