@@ -21,10 +21,11 @@ final class TimerManager {
     private(set) var endDate: Date?
     private(set) var finishGrace: TimeInterval = 0.50
 
-    var totalTimeInterval: TimeInterval { totalTimeInSeconds.toTimeInterval() }
+    var totalTimeInterval: TimeInterval { totalTimeInSeconds.toTimeInterval()
+    }
 
     var remainingInterval: TimeInterval {
-        remainingIntervalIncludingGrace(now: Date.now)
+        remainingInterval(now: Date.now)
     }
 
     private var remainingTimeWhenNotRunning: TimeInterval = 0
@@ -51,7 +52,7 @@ final class TimerManager {
         guard remainingTimeWhenNotRunning > 0 else { return }
 
         enterRunning(
-            intervalIncludingGrace: remainingTimeWhenNotRunning,
+            interval: remainingTimeWhenNotRunning,
             activity: .start(title: "Timer Demo")
         )
     }
@@ -76,7 +77,7 @@ final class TimerManager {
         guard remainingTimeWhenNotRunning > 0 else { return }
 
         enterRunning(
-            intervalIncludingGrace: remainingTimeWhenNotRunning,
+            interval: remainingTimeWhenNotRunning,
             activity: .update(isPaused: false)
         )
     }
@@ -98,9 +99,9 @@ final class TimerManager {
         case update(isPaused: Bool)
     }
 
-    private func enterRunning(intervalIncludingGrace: TimeInterval, activity: ActivityTransition) {
+    private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
-        endDate = Date.now.addingTimeInterval(intervalIncludingGrace)
+        endDate = Date.now.addingTimeInterval(interval)
 
         switch activity {
         case .start(let title):
@@ -114,7 +115,7 @@ final class TimerManager {
         startUnderlyingTimer()
     }
 
-    private func remainingIntervalIncludingGrace(now: Date) -> TimeInterval {
+    private func remainingInterval(now: Date) -> TimeInterval {
         if status == .running, let endDate {
             return max(0, endDate.timeIntervalSince(now))
         }
@@ -122,17 +123,14 @@ final class TimerManager {
     }
 
     private func projectedLabelSeconds(now: Date) -> Int {
-        let interval = remainingIntervalIncludingGrace(now: now)
+        let interval = remainingInterval(now: now)
         let projected = max(0, interval - finishGrace)
         return Int(ceil(projected))
     }
 
     private func syncRemainingTime(now: Date) {
         let seconds = projectedLabelSeconds(now: now)
-        let next = Duration.seconds(Int64(seconds))
-        if remainingTimeInSeconds != next {
-            remainingTimeInSeconds = next
-        }
+        remainingTimeInSeconds = Duration.seconds(seconds)
     }
 
     private func tick() async {
