@@ -7,6 +7,22 @@
 
 import SwiftUI
 
+// MARK: - Timer driving (injectable for tests)
+
+protocol TimerCancellable: AnyObject {
+    func invalidate()
+}
+
+final class AnyTimerCancellable: TimerCancellable {
+    private let _invalidate: () -> Void
+
+    init(_invalidate: @escaping () -> Void) {
+        self._invalidate = _invalidate
+    }
+
+    func invalidate() { _invalidate() }
+}
+
 @Observable
 final class TimerManager {
     enum Status: Equatable {
@@ -22,12 +38,27 @@ final class TimerManager {
     private var endDate: Date?
     private var finishGrace: TimeInterval = 0.50
     private var remainingTimeWhenNotRunning: TimeInterval = 0
-    private var timer: Timer?
+    private var timer: TimerCancellable?
     private let activityHandler: TimerActivityHandling?
+    
+    // Dependencies (injectable for fast, deterministic tests)
+    private let now: () -> Date
+    private let makeRepeatingTimer: (_ interval: TimeInterval, _ handler: @escaping () -> Void) -> TimerCancellable
 
 
-    init(activityHandler: TimerActivityHandling? = nil) {
+    init(
+        activityHandler: TimerActivityHandling? = nil,
+        now: @escaping () -> Date = { Date.now },
+        makeRepeatingTimer: @escaping (_ interval: TimeInterval, _ handler: @escaping () -> Void) -> TimerCancellable = { interval, handler in
+            // Default production implementation uses Foundation.Timer.
+            let t = Timer(timeInterval: interval, repeats: true) { _ in handler() }
+            RunLoop.main.add(t, forMode: .common)
+            return AnyTimerCancellable { t.invalidate() }
+        }
+    ) {
         self.activityHandler = activityHandler
+        self.now = now
+        self.makeRepeatingTimer = makeRepeatingTimer
     }
 
     // MARK: - Public API
@@ -57,7 +88,7 @@ final class TimerManager {
     func pause() {
         guard status == .running, let endDate else { return }
 
-        let now = Date.now
+        let now = now()
         remainingTimeWhenNotRunning = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
@@ -105,7 +136,8 @@ final class TimerManager {
 
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
-        endDate = Date.now.addingTimeInterval(interval)
+        
+        endDate = now().addingTimeInterval(interval)
 
         switch activity {
         case .start(let title):
@@ -114,8 +146,7 @@ final class TimerManager {
             activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: isPaused)
         }
 
-        let now = Date.now
-        syncRemainingTime(now: now)
+        syncRemainingTime(now: now())
         startUnderlyingTimer()
     }
 
@@ -130,10 +161,10 @@ final class TimerManager {
         remainingTimeInSeconds = Duration.seconds(seconds)
     }
 
-    private func tick() async {
+    private func tick() {
         guard status == .running, let endDate else { return }
 
-        let now = Date.now
+        let now = now()
         syncRemainingTime(now: now)
         activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: false)
 
@@ -159,12 +190,10 @@ final class TimerManager {
     private func startUnderlyingTimer() {
         stopUnderlyingTimer()
 
-        timer = Timer(timeInterval: 0.10, repeats: true) { [weak self] _ in
+        timer = makeRepeatingTimer(0.10) { [weak self] in
             guard let self else { return }
             Task { await self.tick() }
         }
-
-        RunLoop.main.add(timer!, forMode: .common)
     }
 
     private func stopUnderlyingTimer() {
