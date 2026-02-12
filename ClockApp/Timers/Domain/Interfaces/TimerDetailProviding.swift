@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-protocol TimerDetailProviding: AnyObject {
+protocol TimerDetailProviding {
     var configuredDuration: Duration { get }
     var remainingDuration: Duration { get }
     func progress(at date: Date) -> Double

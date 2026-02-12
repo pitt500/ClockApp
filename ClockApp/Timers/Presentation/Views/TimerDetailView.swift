@@ -16,6 +16,14 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
 
     private let lineWidth: CGFloat = 10
 
+    // Non-static constants (safe in generic types)
+    private let ringSize: CGFloat = 320
+    private let buttonSize: CGFloat = 92
+    private let horizontalPadding: CGFloat = 24
+    private let topPadding: CGFloat = 24
+    private let buttonFontSize: CGFloat = 20
+    private let cancelFillOpacity: Double = 0.22
+
     var body: some View {
         VStack(spacing: 22) {
             configuredDurationText
@@ -32,37 +40,59 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                         )
                         .rotationEffect(.degrees(-90))
-                        .scaleEffect(x: 1, y: 1)
                 }
 
                 remainingTimeText
                     .font(.system(size: 84, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
-            .frame(width: 320, height: 320)
+            .frame(width: ringSize, height: ringSize)
 
             HStack {
-                Button("Cancel") {
+                circleActionButton(
+                    title: "Cancel",
+                    fill: Color.white.opacity(cancelFillOpacity),
+                    foreground: .white
+                ) {
                     onCancel()
                     dismiss()
                 }
-                .buttonStyle(.bordered)
-                .tint(.gray)
 
                 Spacer()
 
-                Button(provider.actionTitle) {
+                circleActionButton(
+                    title: provider.actionTitle,
+                    fill: provider.actionTint.opacity(0.2),
+                    foreground: provider.actionTint
+                ) {
                     provider.primaryAction()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(provider.actionTint)
+
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, horizontalPadding)
 
             Spacer()
         }
-        .padding(.top, 24)
+        .padding(.top, topPadding)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func circleActionButton(
+        title: String,
+        fill: Color,
+        foreground: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: buttonFontSize, weight: .regular))
+                .foregroundStyle(foreground)
+                .frame(width: buttonSize, height: buttonSize)
+                .background(Circle().fill(fill))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 
     private var configuredDurationText: Text {
@@ -81,4 +111,77 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
         let seconds = Int(provider.configuredDuration.components.seconds)
         return seconds >= 3600 ? .hourMinuteSecond : .minuteSecond
     }
+}
+
+
+#Preview("Timer Detail - Running") {
+    NavigationStack {
+        TimerDetailView(
+            provider: PreviewTimerDetailProvider.running,
+            onCancel: {}
+        )
+        .preferredColorScheme(.dark)
+    }
+}
+
+#Preview("Timer Detail - Paused") {
+    NavigationStack {
+        TimerDetailView(
+            provider: PreviewTimerDetailProvider.paused,
+            onCancel: {}
+        )
+        .preferredColorScheme(.dark)
+    }
+}
+
+#Preview("Timer Detail - Idle") {
+    NavigationStack {
+        TimerDetailView(
+            provider: PreviewTimerDetailProvider.idle,
+            onCancel: {}
+        )
+        .preferredColorScheme(.dark)
+    }
+}
+
+// MARK: - Preview Provider
+
+private struct PreviewTimerDetailProvider: TimerDetailProviding {
+    let configuredDuration: Duration
+    let remainingDuration: Duration
+    let actionTitle: String
+    let actionTint: Color
+    let progressValue: Double
+
+    static let running = PreviewTimerDetailProvider(
+        configuredDuration: .seconds(80),
+        remainingDuration: .seconds(69),
+        actionTitle: "Pause",
+        actionTint: Color(uiColor: .systemOrange),
+        progressValue: 0.86
+    )
+
+    static let paused = PreviewTimerDetailProvider(
+        configuredDuration: .seconds(80),
+        remainingDuration: .seconds(69),
+        actionTitle: "Resume",
+        actionTint: Color(uiColor: .systemGreen),
+        progressValue: 0.86
+    )
+
+    static let idle = PreviewTimerDetailProvider(
+        configuredDuration: .seconds(80),
+        remainingDuration: .seconds(80),
+        actionTitle: "Start",
+        actionTint: Color(uiColor: .systemGreen),
+        progressValue: 1.0
+    )
+
+    func progress(at date: Date) -> Double {
+        progressValue
+    }
+
+    func primaryAction() { }
+
+    func cancel() { }
 }
