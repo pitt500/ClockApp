@@ -10,6 +10,8 @@ import SwiftUI
 
 struct TimersScreen: View {
     @State private var store = TimersStore()
+    
+    private let separatorTint = Color.white.opacity(0.15)
 
     var body: some View {
         NavigationStack {
@@ -23,6 +25,7 @@ struct TimersScreen: View {
                         }
                         .listRowInsets(.init())
                         .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     }
                 } else {
                     // Active timers section (all active timers are "focused")
@@ -44,6 +47,9 @@ struct TimersScreen: View {
                                     onPrimaryAction: { store.toggle(item) }
                                 )
                             }
+                            // Key: separators only for timer rows
+                            .listRowSeparator(.visible)
+                            .listRowSeparatorTint(separatorTint)
                         }
                     }
                 }
@@ -68,11 +74,14 @@ struct TimersScreen: View {
                                     onPrimaryAction: { store.toggle(item) }
                                 )
                             }
+                            // Key: separators only for timer rows
+                            .listRowSeparator(.visible)
+                            .listRowSeparatorTint(separatorTint)
                         }
                     }
                 }
             }
-            .listStyle(.insetGrouped)
+            .listStyle(.plain)
             .navigationTitle("Timers")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -89,4 +98,9 @@ struct TimersScreen: View {
             }
         }
     }
+}
+
+#Preview {
+    TimersScreen()
+        .preferredColorScheme(.dark)
 }
