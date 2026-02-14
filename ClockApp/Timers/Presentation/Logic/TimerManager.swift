@@ -61,6 +61,15 @@ final class TimerManager {
         self.makeRepeatingTimer = makeRepeatingTimer
     }
 
+    /// Configures this manager as an idle "preset" (used for Recents).
+    ///
+    /// This sets the configured duration and the internal remaining interval (including grace)
+    /// without starting the underlying repeating timer.
+    func setPreset(totalTime: Duration) {
+        stopInternal()
+        configure(totalTime: totalTime)
+    }
+
     // MARK: - Public API
     var totalTimeInterval: TimeInterval {
         max(0, totalTimeInSeconds.toTimeInterval() + finishGrace)
@@ -69,9 +78,7 @@ final class TimerManager {
     var onDidFinish: (() -> Void)?
 
     func setTimer(totalTime: Duration) {
-        totalTimeInSeconds = totalTime
-        remainingTimeWhenNotRunning = totalTimeInSeconds.toTimeInterval() + finishGrace
-        remainingTimeInSeconds = totalTimeInSeconds
+        configure(totalTime: totalTime)
         start()
     }
 
@@ -134,6 +141,13 @@ final class TimerManager {
         case update(isPaused: Bool)
     }
 
+    private func configure(totalTime: Duration) {
+        totalTimeInSeconds = totalTime
+        remainingTimeInSeconds = totalTime
+        remainingTimeWhenNotRunning = totalTime.toTimeInterval() + finishGrace
+    }
+
+
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
         
@@ -191,8 +205,7 @@ final class TimerManager {
         stopUnderlyingTimer()
 
         timer = makeRepeatingTimer(0.10) { [weak self] in
-            guard let self else { return }
-            Task { await self.tick() }
+            self?.tick()
         }
     }
 

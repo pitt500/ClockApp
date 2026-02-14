@@ -32,37 +32,105 @@ final class TimersStore {
     private(set) var activeTimers: [TimerItem] = []
     private(set) var recentTimers: [TimerItem] = []
 
-    private enum Layout {
-        static let naturalFinishFeedbackDelay: TimeInterval = 0.25
-    }
-
     // MARK: - Intents
 
     /// Creates and starts a new timer from the picker draft.
     func startFromDraft() {
         guard draft.isValid else { return }
 
-        let item = TimerItem(
-            label: "Timer",
-            configuredDuration: draft.duration,
-            manager: TimerManager()
-        )
+        // 1) Ensure the configured duration exists in Recents (unique by duration).
+        ensureRecentPresetExists(for: draft.duration)
 
-        activate(item)
+        // 2) Always create a NEW active instance (Clock.app behavior).
+        let active = makeActiveTimer(configuredDuration: draft.duration)
+        startActive(active)
 
         // Reset picker after creating the timer.
         draft = .init()
     }
 
-    /// Activates a timer (moves it to active and starts it).
-    func activate(_ item: TimerItem) {
-        // Remove from recents if present.
-        recentTimers.removeAll { $0.id == item.id }
+    /// Starts a new active timer instance from a Recents preset.
+    /// Recents is not modified (the preset stays in the list).
+    func activate(_ preset: TimerItem) {
+        let active = makeActiveTimer(configuredDuration: preset.configuredDuration)
+        startActive(active)
+    }
 
-        // Active timers: append at the end (Clock.app behavior).
-        if !activeTimers.contains(where: { $0.id == item.id }) {
-            activeTimers.append(item)
+    /// Toggles a timer between running and paused.
+    /// If it's a Recents preset, it starts a NEW active instance.
+    func toggle(_ item: TimerItem) {
+        // If this is an active item, toggle its running state.
+        if activeTimers.contains(where: { $0.id == item.id }) {
+            switch item.manager.status {
+            case .running:
+                item.manager.pause()
+            case .paused:
+                item.manager.resume()
+            case .idle:
+                // Active list shouldn't contain idle items, but don't crash.
+                break
+            }
+            return
         }
+
+        // Otherwise, treat it as a Recents preset: start a NEW active instance.
+        activate(item)
+    }
+
+    /// Cancels a timer explicitly (user-driven).
+    func cancel(_ item: TimerItem) {
+        item.manager.cancel()
+
+        // Remove the active instance.
+        activeTimers.removeAll { $0.id == item.id }
+
+        // Ensure a unique preset exists in Recents.
+        ensureRecentPresetExists(for: item.configuredDuration)
+    }
+
+    // MARK: - Finish Handling
+
+    private func handleTimerDidFinish(_ manager: TimerManager) {
+        guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
+
+        // Remove the finished active instance.
+        activeTimers.removeAll { $0.id == item.id }
+
+        // Ensure a unique preset exists in Recents.
+        ensureRecentPresetExists(for: item.configuredDuration)
+    }
+
+    // MARK: - Helpers
+
+    private func ensureRecentPresetExists(for duration: Duration) {
+        let key = durationKey(duration)
+        guard !recentTimers.contains(where: { durationKey($0.configuredDuration) == key }) else {
+            return
+        }
+
+        let manager = TimerManager()
+        manager.setPreset(totalTime: duration)
+
+        let preset = TimerItem(
+            label: "Timer",
+            configuredDuration: duration,
+            manager: manager
+        )
+
+        // New presets are inserted at the end.
+        recentTimers.append(preset)
+    }
+
+    private func makeActiveTimer(configuredDuration: Duration) -> TimerItem {
+        TimerItem(
+            label: "Timer",
+            configuredDuration: configuredDuration,
+            manager: TimerManager()
+        )
+    }
+
+    private func startActive(_ item: TimerItem) {
+        activeTimers.append(item)
 
         // Store is the single owner of onDidFinish.
         item.manager.onDidFinish = { [weak self, weak manager = item.manager] in
@@ -74,49 +142,9 @@ final class TimersStore {
         item.manager.setTimer(totalTime: item.configuredDuration)
     }
 
-    /// Toggles a timer between running and paused.
-    /// If the timer is idle (e.g. from recents), it gets activated.
-    func toggle(_ item: TimerItem) {
-        switch item.manager.status {
-        case .running:
-            item.manager.pause()
-
-        case .paused:
-            item.manager.resume()
-
-        case .idle:
-            activate(item)
-        }
-    }
-
-    /// Cancels a timer explicitly (user-driven).
-    func cancel(_ item: TimerItem) {
-        item.manager.cancel()
-        moveToRecents(item)
-        item.manager.resetToTotalTime()
-    }
-
-    // MARK: - Finish Handling
-
-    private func handleTimerDidFinish(_ manager: TimerManager) {
-        guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
-
-        moveToRecents(item)
-
-        // Reset so the recents row shows the preset duration.
-        item.manager.resetToTotalTime()
-    }
-
-    // MARK: - Helpers
-
-    private func moveToRecents(_ item: TimerItem) {
-        activeTimers.removeAll { $0.id == item.id }
-
-        // Recents should never contain duplicates.
-        recentTimers.removeAll { $0.id == item.id }
-
-        // Recents: insert at the beginning (most recent first).
-        recentTimers.insert(item, at: 0)
+    private func durationKey(_ duration: Duration) -> Int {
+        // Your app uses whole seconds.
+        max(0, Int(duration.components.seconds))
     }
 }
 
