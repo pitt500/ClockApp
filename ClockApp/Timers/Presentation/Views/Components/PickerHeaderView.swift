@@ -56,7 +56,7 @@ struct PickerHeaderView: View {
                     title: "Cancel",
                     fill: ClockTimerStyle.cancelFill,
                     foreground: ClockTimerStyle.cancelForeground,
-                    isEnabled: true
+                    isEnabled: false
                 ) {
                     draft = .init()
                 }
