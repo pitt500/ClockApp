@@ -45,14 +45,15 @@ struct TimersScreen: View {
                                     onPrimaryAction: { store.toggle(item) }
                                 )
                             }
-                            // Key: separators only for timer rows
                             .listRowSeparator(.visible)
                             .listRowSeparatorTint(ClockTimerStyle.separatorTint)
+                        }
+                        .onDelete { offsets in
+                            store.deleteActiveTimers(at: offsets)
                         }
                     }
                 }
 
-                // Recents section
                 if !store.recentTimers.isEmpty {
                     Section("Recents") {
                         ForEach(store.recentTimers) { item in
@@ -72,9 +73,11 @@ struct TimersScreen: View {
                                     onPrimaryAction: { store.toggle(item) }
                                 )
                             }
-                            // Key: separators only for timer rows
                             .listRowSeparator(.visible)
                             .listRowSeparatorTint(ClockTimerStyle.separatorTint)
+                        }
+                        .onDelete { offsets in
+                            store.deleteRecentTimers(at: offsets)
                         }
                     }
                 }
@@ -83,12 +86,13 @@ struct TimersScreen: View {
             .navigationTitle("Timers")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Edit") {}
+                    EditButton()
                 }
             }
         }
     }
 }
+
 
 #Preview {
     TimersScreen()

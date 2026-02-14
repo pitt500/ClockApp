@@ -119,3 +119,13 @@ final class TimersStore {
         recentTimers.insert(item, at: 0)
     }
 }
+
+extension TimersStore {
+    func deleteActiveTimers(at offsets: IndexSet) {
+        activeTimers.remove(atOffsets: offsets)
+    }
+
+    func deleteRecentTimers(at offsets: IndexSet) {
+        recentTimers.remove(atOffsets: offsets)
+    }
+}
