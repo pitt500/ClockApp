@@ -71,6 +71,11 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
         }
         .padding(.top, ClockTimerStyle.topPadding)
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: provider.progress(at: Date.now)) { _, newValue in
+            if newValue == 0 {
+                dismiss()
+            }
+        }
     }
 
     private func circleActionButton(
