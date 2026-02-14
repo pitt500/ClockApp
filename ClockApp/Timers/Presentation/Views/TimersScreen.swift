@@ -85,14 +85,6 @@ struct TimersScreen: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Edit") {}
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        store.draft = .init(hours: 0, minutes: 0, seconds: 20)
-                        store.startFromDraft()
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
             }
         }
     }
