@@ -52,18 +52,50 @@ struct PickerHeaderView: View {
             }
 
             HStack {
-                Button("Cancel") { draft = .init() }
-                    .buttonStyle(.bordered)
-                    .tint(.gray)
+                circleActionButton(
+                    title: "Cancel",
+                    fill: ClockTimerStyle.cancelFill,
+                    foreground: ClockTimerStyle.cancelForeground,
+                    isEnabled: true
+                ) {
+                    draft = .init()
+                }
 
                 Spacer()
 
-                Button("Start") { onStart() }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!draft.isValid)
+                circleActionButton(
+                    title: "Start",
+                    fill: ClockTimerStyle.primaryFill(tint: Color(uiColor: .systemGreen)),
+                    foreground: ClockTimerStyle.primaryForeground(tint: Color(uiColor: .systemGreen)),
+                    isEnabled: draft.isValid
+                ) {
+                    onStart()
+                }
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ClockTimerStyle.horizontalPadding)
+    }
+
+    private func circleActionButton(
+        title: String,
+        fill: Color,
+        foreground: Color,
+        isEnabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: ClockTimerStyle.actionButtonFontSize, weight: .regular))
+                .foregroundStyle(foreground.opacity(isEnabled ? 1 : 0.35))
+                .frame(width: ClockTimerStyle.actionButtonSize, height: ClockTimerStyle.actionButtonSize)
+                .background(
+                    Circle().fill(fill.opacity(isEnabled ? 1 : 0.35))
+                )
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .accessibilityLabel(title)
     }
 
     private struct UnitWheelPicker: View {
@@ -76,14 +108,11 @@ struct PickerHeaderView: View {
                 Picker(unit, selection: $selection) {
                     ForEach(range, id: \.self) { value in
                         Text("\(value)").tag(value)
-                            
                     }
-                    
                 }
                 .pickerStyle(.wheel)
                 .frame(width: 60, alignment: .leading)
-                
-                
+
                 Text(unit)
                     .font(.headline.bold())
                     .foregroundStyle(.primary)

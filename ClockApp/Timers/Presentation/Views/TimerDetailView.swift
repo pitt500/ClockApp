@@ -16,14 +16,6 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
 
     private let lineWidth: CGFloat = 10
 
-    // Non-static constants (safe in generic types)
-    private let ringSize: CGFloat = 320
-    private let buttonSize: CGFloat = 92
-    private let horizontalPadding: CGFloat = 24
-    private let topPadding: CGFloat = 24
-    private let buttonFontSize: CGFloat = 20
-    private let cancelFillOpacity: Double = 0.22
-
     var body: some View {
         VStack(spacing: 22) {
             configuredDurationText
@@ -46,13 +38,13 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
                     .font(.system(size: 84, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
-            .frame(width: ringSize, height: ringSize)
+            .frame(width: ClockTimerStyle.ringSize, height: ClockTimerStyle.ringSize)
 
             HStack {
                 circleActionButton(
                     title: "Cancel",
-                    fill: Color.white.opacity(cancelFillOpacity),
-                    foreground: .white
+                    fill: ClockTimerStyle.cancelFill,
+                    foreground: ClockTimerStyle.cancelForeground
                 ) {
                     onCancel()
                     dismiss()
@@ -62,18 +54,22 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
 
                 circleActionButton(
                     title: provider.actionTitle,
-                    fill: provider.actionTint.opacity(0.2),
-                    foreground: provider.actionTint
+                    fill: ClockTimerStyle.primaryFill(
+                        tint: provider.actionTint
+                    ),
+                    foreground: ClockTimerStyle.primaryForeground(
+                        tint: provider.actionTint
+                    )
                 ) {
                     provider.primaryAction()
                 }
 
             }
-            .padding(.horizontal, horizontalPadding)
+            .padding(.horizontal, ClockTimerStyle.horizontalPadding)
 
             Spacer()
         }
-        .padding(.top, topPadding)
+        .padding(.top, ClockTimerStyle.topPadding)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -85,9 +81,17 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: buttonFontSize, weight: .regular))
+                .font(
+                    .system(
+                        size: ClockTimerStyle.actionButtonFontSize,
+                        weight: .regular
+                    )
+                )
                 .foregroundStyle(foreground)
-                .frame(width: buttonSize, height: buttonSize)
+                .frame(
+                    width: ClockTimerStyle.actionButtonSize,
+                    height: ClockTimerStyle.actionButtonSize
+                )
                 .background(Circle().fill(fill))
                 .contentShape(Circle())
         }

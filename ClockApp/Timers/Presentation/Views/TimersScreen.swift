@@ -10,8 +10,6 @@ import SwiftUI
 
 struct TimersScreen: View {
     @State private var store = TimersStore()
-    
-    private let separatorTint = Color.white.opacity(0.15)
 
     var body: some View {
         NavigationStack {
@@ -49,7 +47,7 @@ struct TimersScreen: View {
                             }
                             // Key: separators only for timer rows
                             .listRowSeparator(.visible)
-                            .listRowSeparatorTint(separatorTint)
+                            .listRowSeparatorTint(ClockTimerStyle.separatorTint)
                         }
                     }
                 }
@@ -76,7 +74,7 @@ struct TimersScreen: View {
                             }
                             // Key: separators only for timer rows
                             .listRowSeparator(.visible)
-                            .listRowSeparatorTint(separatorTint)
+                            .listRowSeparatorTint(ClockTimerStyle.separatorTint)
                         }
                     }
                 }
