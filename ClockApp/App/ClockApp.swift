@@ -11,7 +11,7 @@ import SwiftUI
 struct ClockApp: App {
     var body: some Scene {
         WindowGroup {
-            TimersScreen()
+            RootView()
                 .preferredColorScheme(.dark)
         }
     }
