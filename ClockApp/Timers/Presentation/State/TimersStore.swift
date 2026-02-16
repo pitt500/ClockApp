@@ -17,6 +17,8 @@ final class TimersStore {
         var minutes: Int = 0
         var seconds: Int = 12
 
+        var label: String = ""
+
         var isValid: Bool { hours > 0 || minutes > 0 || seconds > 0 }
 
         var duration: Duration {
@@ -38,21 +40,20 @@ final class TimersStore {
     func startFromDraft() {
         guard draft.isValid else { return }
 
-        // 1) Ensure the configured duration exists in Recents (unique by duration).
-        ensureRecentPresetExists(for: draft.duration)
+        // 1) Ensure the configured duration exists in Recents (unique by duration + label).
+        ensureRecentPresetExists(for: draft.duration, label: draft.label)
 
-        // 2) Always create a NEW active instance (Clock.app behavior).
-        let active = makeActiveTimer(configuredDuration: draft.duration)
+        // 2) Always create a NEW active instance.
+        let active = makeActiveTimer(configuredDuration: draft.duration, label: draft.label)
         startActive(active)
 
-        // Reset picker after creating the timer.
         draft = .init()
     }
 
     /// Starts a new active timer instance from a Recents preset.
     /// Recents is not modified (the preset stays in the list).
     func activate(_ preset: TimerItem) {
-        let active = makeActiveTimer(configuredDuration: preset.configuredDuration)
+        let active = makeActiveTimer(configuredDuration: preset.configuredDuration, label: preset.label)
         startActive(active)
     }
 
@@ -84,8 +85,7 @@ final class TimersStore {
         // Remove the active instance.
         activeTimers.removeAll { $0.id == item.id }
 
-        // Ensure a unique preset exists in Recents.
-        ensureRecentPresetExists(for: item.configuredDuration)
+        ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
     }
 
     // MARK: - Finish Handling
@@ -96,15 +96,14 @@ final class TimersStore {
         // Remove the finished active instance.
         activeTimers.removeAll { $0.id == item.id }
 
-        // Ensure a unique preset exists in Recents.
-        ensureRecentPresetExists(for: item.configuredDuration)
+        ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
     }
 
     // MARK: - Helpers
 
-    private func ensureRecentPresetExists(for duration: Duration) {
-        let key = durationKey(duration)
-        guard !recentTimers.contains(where: { durationKey($0.configuredDuration) == key }) else {
+    private func ensureRecentPresetExists(for duration: Duration, label: String) {
+        let key = recentKey(duration: duration, label: label)
+        guard !recentTimers.contains(where: { recentKey(duration: $0.configuredDuration, label: $0.label) == key }) else {
             return
         }
 
@@ -112,7 +111,7 @@ final class TimersStore {
         manager.setPreset(totalTime: duration)
 
         let preset = TimerItem(
-            label: "Timer",
+            label: label,
             configuredDuration: duration,
             manager: manager
         )
@@ -121,9 +120,9 @@ final class TimersStore {
         recentTimers.append(preset)
     }
 
-    private func makeActiveTimer(configuredDuration: Duration) -> TimerItem {
+    private func makeActiveTimer(configuredDuration: Duration, label: String) -> TimerItem {
         TimerItem(
-            label: "Timer",
+            label: label,
             configuredDuration: configuredDuration,
             manager: TimerManager()
         )
@@ -143,8 +142,11 @@ final class TimersStore {
     }
 
     private func durationKey(_ duration: Duration) -> Int {
-        // Your app uses whole seconds.
         max(0, Int(duration.components.seconds))
+    }
+
+    private func recentKey(duration: Duration, label: String) -> String {
+        "\(durationKey(duration))|\(label)"
     }
 }
 

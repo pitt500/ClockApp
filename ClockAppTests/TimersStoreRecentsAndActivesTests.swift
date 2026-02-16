@@ -121,4 +121,37 @@ struct TimersStoreRecentsAndActivesTests {
         let activeSeconds = store.activeTimers.map { Int($0.configuredDuration.components.seconds) }
         #expect(activeSeconds.allSatisfy { $0 == 10 })
     }
+    
+    @Test
+    func `Starting same duration with different label adds a second preset to recents`() {
+        let store = TimersStore()
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "")
+        store.startFromDraft()
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Alarm")
+        store.startFromDraft()
+
+        #expect(store.recentTimers.count == 2)
+        #expect(store.activeTimers.count == 2)
+
+        let labels = store.recentTimers.map(\.label)
+        #expect(labels.contains(""))
+        #expect(labels.contains("Alarm"))
+    }
+
+    @Test
+    func `Starting same duration with same label does not duplicate recents`() {
+        let store = TimersStore()
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Alarm")
+        store.startFromDraft()
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Alarm")
+        store.startFromDraft()
+
+        #expect(store.recentTimers.count == 1)
+        #expect(store.activeTimers.count == 2)
+    }
+
 }

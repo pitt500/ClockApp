@@ -19,7 +19,7 @@ struct TimerRowView: View {
                     .font(.system(size: 54, weight: .light, design: .rounded))
                     .foregroundStyle(item.manager.status == .idle ? .secondary : .primary)
 
-                configuredDurationText
+                subtitleText
                     .foregroundStyle(.secondary)
             }
 
@@ -29,7 +29,14 @@ struct TimerRowView: View {
         .padding(.vertical, 10)
     }
 
-    // If idle, show the preset (totalTime). If running/paused, show remainingTime.
+    private var subtitleText: Text {
+        if item.label.isEmpty {
+            configuredDurationText
+        } else {
+            Text(item.label)
+        }
+    }
+
     private var mainTimeText: Text {
         let durationToShow: Duration = (item.manager.status == .idle)
             ? item.manager.totalTimeInSeconds
