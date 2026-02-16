@@ -50,24 +50,60 @@ struct TimersScreen: View {
 
     private var labelAndSoundSection: some View {
         Section {
-            HStack {
-                Text("Label")
-                Spacer()
-                TextField("Timer", text: $store.draft.label)
-                    .multilineTextAlignment(.trailing)
+            VStack(spacing: 0) {
+                labelRow
+                Divider()
+                    .padding([.leading, .trailing], 16)
+                whenTimerEndsRow
             }
-
-            HStack {
-                Text("When Timer Ends")
-                Spacer()
-                Text("Radar")
-                    .foregroundStyle(.secondary)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+            .background {
+                RoundedRectangle(cornerRadius: 25, style: .continuous)
+                    .fill(.ultraThinMaterial)
             }
+            .listRowSeparator(.hidden)
         }
     }
+
+    private var labelRow: some View {
+        HStack(spacing: 12) {
+            Text("Label")
+                .foregroundStyle(.primary)
+
+            Spacer(minLength: 8)
+
+            TextField("Timer", text: $store.draft.label)
+                .multilineTextAlignment(.trailing)
+                .foregroundStyle(.secondary)
+                .textInputAutocapitalization(.sentences)
+                .autocorrectionDisabled()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private var whenTimerEndsRow: some View {
+        Button {
+            // Placeholder: no behavior yet
+        } label: {
+            HStack(spacing: 12) {
+                Text("When Timer Ends")
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 8)
+
+                Text("Radar")
+                    .foregroundStyle(.secondary)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
+        .buttonStyle(.plain)
+    }
+
 
     private var activeSection: some View {
         Section {
