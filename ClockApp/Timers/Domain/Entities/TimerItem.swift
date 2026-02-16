@@ -16,8 +16,13 @@ struct TimerItem: Identifiable {
     let configuredDuration: Duration
     let manager: TimerManager
 
-    init(label: String, configuredDuration: Duration, manager: TimerManager) {
-        self.id = UUID()
+    init(
+        id: UUID = UUID(),
+        label: String,
+        configuredDuration: Duration,
+        manager: TimerManager
+    ) {
+        self.id = id
         self.label = label
         self.configuredDuration = configuredDuration
         self.manager = manager
