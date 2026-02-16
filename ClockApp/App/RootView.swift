@@ -9,9 +9,9 @@
 import SwiftUI
 
 struct RootView: View {
-    @State private var selectedTab: Tab = .timers
+    @State private var selectedTab: TabTag = .timers
     
-    enum Tab {
+    enum TabTag: String {
         case worldClock
         case alarms
         case stopwatch
@@ -20,29 +20,37 @@ struct RootView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            WorldClockPlaceholderView()
-                .tabItem {
-                    Label("World Clock", systemImage: "globe")
-                }
-                .tag(Tab.worldClock)
-
-            AlarmsPlaceholderView()
-                .tabItem {
-                    Label("Alarms", systemImage: "alarm")
-                }
-                .tag(Tab.alarms)
+            Tab(
+                "World Clock",
+                systemImage: "globe",
+                value: .worldClock
+            ) {
+                WorldClockPlaceholderView()
+            }
             
-            StopwatchPlaceholderView()
-                .tabItem {
-                    Label("Stopwatch", systemImage: "stopwatch")
-                }
-                .tag(Tab.stopwatch)
+            Tab(
+                "Alarms",
+                systemImage: "alarm",
+                value: .alarms
+            ) {
+                AlarmsPlaceholderView()
+            }
+            
+            Tab(
+                "Stopwatch",
+                systemImage: "stopwatch",
+                value: .stopwatch
+            ) {
+                StopwatchPlaceholderView()
+            }
 
-            TimersScreen()
-                .tabItem {
-                    Label("Timers", systemImage: "timer")
-                }
-                .tag(Tab.timers)
+            Tab(
+                "Timers",
+                systemImage: "timer",
+                value: .timers
+            ) {
+                TimersScreen()
+            }
         }
         .tint(.orange)
     }
