@@ -64,7 +64,7 @@ struct TimersStoreRecentsAndActivesTests {
         #expect(store.recentTimers.count == 2)
         #expect(store.activeTimers.count == 2)
 
-        // New presets are inserted at the top
+        // New presets are inserted at the end
         let topRecentSeconds = Int(store.recentTimers[0].configuredDuration.components.seconds)
         let secondRecentSeconds = Int(store.recentTimers[1].configuredDuration.components.seconds)
 
