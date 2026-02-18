@@ -49,7 +49,7 @@ struct RootView: View {
                 systemImage: "timer",
                 value: .timers
             ) {
-                TimersScreen()
+                TimersScreenUIKit()
             }
         }
         .tint(.orange)
