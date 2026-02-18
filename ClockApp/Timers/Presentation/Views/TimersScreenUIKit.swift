@@ -216,7 +216,9 @@ private struct TimersTableView: UIViewRepresentable {
 
     final class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
         static let cellID = "Cell"
+        
         private let horizontalInset: CGFloat = 20
+        private let headerBottomPadding: CGFloat = 6
 
         private weak var tableView: UITableView?
         private var model: TimersTableModel?
@@ -237,7 +239,7 @@ private struct TimersTableView: UIViewRepresentable {
 
             tableView.setEditing(model.isEditing, animated: true)
             tableView.reloadData()
-            updateHeader(in: tableView)
+            updateDraftHeader(in: tableView)
         }
 
         // MARK: Data Source
@@ -249,24 +251,6 @@ private struct TimersTableView: UIViewRepresentable {
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             guard let model, let s = Section(rawValue: section) else { return 0 }
             return items(for: s, model: model).count
-        }
-
-        func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            guard let model, let s = Section(rawValue: section) else { return nil }
-            switch s {
-            case .active:
-                return nil
-            case .recents:
-                return model.recents.isEmpty ? nil : "Recents"
-            }
-        }
-
-        func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-            guard let header = view as? UITableViewHeaderFooterView else { return }
-            header.textLabel?.textColor = UIColor.secondaryLabel
-            header.textLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
-            header.contentView.preservesSuperviewLayoutMargins = false
-            header.contentView.layoutMargins = UIEdgeInsets(top: 0, left: horizontalInset, bottom: 0, right: horizontalInset)
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -298,7 +282,8 @@ private struct TimersTableView: UIViewRepresentable {
                 TimerRowView(
                     item: item,
                     onPrimaryAction: { [weak self] in
-                        self?.model?.onToggle(item)
+                        guard let self else { return }
+                        self.model?.onToggle(item)
                     }
                 )
                 .padding(.horizontal, self.horizontalInset)
@@ -348,13 +333,44 @@ private struct TimersTableView: UIViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self, let tableView = self.tableView else { return }
                 tableView.reloadData()
-                self.updateHeader(in: tableView)
+                self.updateDraftHeader(in: tableView)
             }
         }
 
-        // MARK: Header
+        // MARK: - Custom Section Header ("Recents")
 
-        private func updateHeader(in tableView: UITableView) {
+        func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+            guard let model, let s = Section(rawValue: section) else { return nil }
+            guard s == .recents, !model.recents.isEmpty else { return nil }
+
+            let label = UILabel()
+            label.text = "Recents"
+            label.textColor = .secondaryLabel
+            label.font = UIFont.preferredFont(forTextStyle: .headline)
+
+            let container = UIView()
+            container.backgroundColor = .clear
+            container.addSubview(label)
+
+            label.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: horizontalInset),
+                label.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -horizontalInset),
+                label.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -headerBottomPadding)
+            ])
+
+            return container
+        }
+
+        func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+            guard let model, let s = Section(rawValue: section) else { return .leastNonzeroMagnitude }
+            guard s == .recents, !model.recents.isEmpty else { return .leastNonzeroMagnitude }
+            return 44
+        }
+
+        // MARK: Draft Header (tableHeaderView)
+
+        private func updateDraftHeader(in tableView: UITableView) {
             guard let model else { return }
 
             guard model.showDraftHeader else {
