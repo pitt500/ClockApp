@@ -116,8 +116,8 @@ final class TimersStore {
             manager: manager
         )
 
-        // New presets are inserted at the end.
-        recentTimers.append(preset)
+        // New presets are inserted at the top.
+        recentTimers.insert(preset, at: 0)
     }
 
     private func makeActiveTimer(configuredDuration: Duration, label: String) -> TimerItem {
