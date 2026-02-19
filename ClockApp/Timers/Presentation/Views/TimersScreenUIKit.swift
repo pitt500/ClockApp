@@ -219,6 +219,7 @@ private struct TimersTableView: UIViewRepresentable {
         
         private let horizontalInset: CGFloat = 20
         private let headerBottomPadding: CGFloat = 6
+        private let trashIcon = UIImage(systemName: "trash.fill")
 
         private weak var tableView: UITableView?
         private var model: TimersTableModel?
@@ -315,26 +316,46 @@ private struct TimersTableView: UIViewRepresentable {
             return item(at: indexPath, section: section, model: model) != nil
         }
 
+        // MARK: Swipe-to-delete (Trash icon)
+
         func tableView(_ tableView: UITableView,
-                       commit editingStyle: UITableViewCell.EditingStyle,
-                       forRowAt indexPath: IndexPath) {
-            guard editingStyle == .delete,
-                  let model,
-                  let section = Section(rawValue: indexPath.section)
-            else { return }
+                       trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+        -> UISwipeActionsConfiguration? {
 
-            switch section {
-            case .active:
-                model.onDeleteActive(IndexSet(integer: indexPath.row))
-            case .recents:
-                model.onDeleteRecents(IndexSet(integer: indexPath.row))
+            guard
+                let model,
+                let section = Section(rawValue: indexPath.section),
+                item(at: indexPath, section: section, model: model) != nil
+            else { return nil }
+
+            let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] _, _, completion in
+                guard let self, let model = self.model else {
+                    completion(false)
+                    return
+                }
+
+                switch section {
+                case .active:
+                    model.onDeleteActive(IndexSet(integer: indexPath.row))
+                case .recents:
+                    model.onDeleteRecents(IndexSet(integer: indexPath.row))
+                }
+
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, let tableView = self.tableView else { return }
+                    tableView.reloadData()
+                    self.updateDraftHeader(in: tableView)
+                }
+
+                completion(true)
             }
 
-            DispatchQueue.main.async { [weak self] in
-                guard let self, let tableView = self.tableView else { return }
-                tableView.reloadData()
-                self.updateDraftHeader(in: tableView)
-            }
+            deleteAction.image = trashIcon
+            deleteAction.backgroundColor = .systemRed
+
+            let config = UISwipeActionsConfiguration(actions: [deleteAction])
+            config.performsFirstActionWithFullSwipe = true
+            return config
         }
 
         // MARK: - Custom Section Header ("Recents")
