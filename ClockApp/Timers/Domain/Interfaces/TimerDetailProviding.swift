@@ -8,10 +8,9 @@
 
 import SwiftUI
 
-protocol TimerDetailProviding {
+protocol TimerDetailProviding: TimerProgressProviding {
     var configuredDuration: Duration { get }
     var remainingDuration: Duration { get }
-    func progress(at date: Date) -> Double
 
     var actionTitle: String { get }
     var actionTint: Color { get }
