@@ -21,19 +21,38 @@ enum ClockTimerStyle {
     static let horizontalPadding: CGFloat = 24
     static let topPadding: CGFloat = 24
 
+    // TimerRow (primary button + progress ring)
+
+    static let rowPrimaryButtonSize: CGFloat = 56
+    static let rowPrimaryButtonIconSize: CGFloat = 18
+    static let rowPrimaryButtonIconWeight: Font.Weight = .semibold
+
+    static let rowRingLineWidth: CGFloat = 4
+    static let rowRingPadding: CGFloat = 6
+
+    static var rowRingSize: CGFloat {
+        rowPrimaryButtonSize + (rowRingPadding * 2)
+    }
+
     // MARK: - Colors
 
-    // Matches the Clock look in dark mode: filled circle with tint at low opacity.
     static let actionFillOpacity: Double = 0.20
-
-    // Matches the Clock cancel button (subtle gray fill).
     static let cancelFillOpacity: Double = 0.22
+
+    static let ringTrackOpacity: Double = 0.18
+
+    // TimerRow idle primary button (green fill)
+    static let rowIdleButtonFillOpacity: Double = 0.22
 
     static var cancelFill: Color { Color.white.opacity(cancelFillOpacity) }
     static var cancelForeground: Color { .white }
 
     static func primaryFill(tint: Color) -> Color { tint.opacity(actionFillOpacity) }
     static func primaryForeground(tint: Color) -> Color { tint }
+
+    static func rowIdleButtonFill(tint: Color = .green) -> Color {
+        tint.opacity(rowIdleButtonFillOpacity)
+    }
 
     // Optional: separators for Timers list
     static var separatorTint: Color { Color.white.opacity(0.14) }

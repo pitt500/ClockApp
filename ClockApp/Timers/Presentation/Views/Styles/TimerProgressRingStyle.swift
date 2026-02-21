@@ -18,7 +18,7 @@ struct TimerProgressRingStyle: Equatable {
         size: CGFloat,
         lineWidth: CGFloat,
         tint: Color = .orange,
-        track: Color = .secondary.opacity(0.18)
+        track: Color = .secondary.opacity(ClockTimerStyle.ringTrackOpacity)
     ) {
         self.size = size
         self.lineWidth = lineWidth
@@ -32,22 +32,11 @@ struct TimerProgressRingStyle: Equatable {
 extension TimerProgressRingStyle {
     static let detail = TimerProgressRingStyle(
         size: ClockTimerStyle.ringSize,
-        lineWidth: 10,
-        tint: .orange,
-        track: .secondary.opacity(0.18)
+        lineWidth: ClockTimerStyle.ringLineWidth
     )
 
-    static let row: TimerProgressRingStyle = {
-        let buttonSize: CGFloat = 56
-        let ringPadding: CGFloat = 6
-        let ringLineWidth: CGFloat = 4
-        let ringSize = buttonSize + (ringPadding * 2)
-
-        return TimerProgressRingStyle(
-            size: ringSize,
-            lineWidth: ringLineWidth,
-            tint: .orange,
-            track: .secondary.opacity(0.18)
-        )
-    }()
+    static let row = TimerProgressRingStyle(
+        size: ClockTimerStyle.rowRingSize,
+        lineWidth: ClockTimerStyle.rowRingLineWidth
+    )
 }

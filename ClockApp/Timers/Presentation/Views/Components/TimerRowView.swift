@@ -12,12 +12,6 @@ struct TimerRowView: View {
     let item: TimerItem
     let onPrimaryAction: () -> Void
 
-    private let buttonSize: CGFloat = 56
-    private let ringLineWidth: CGFloat = 4
-    private let ringPadding: CGFloat = 6
-
-    private var ringSize: CGFloat { buttonSize + (ringPadding * 2) }
-
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
@@ -98,12 +92,20 @@ struct TimerRowView: View {
                 }
 
                 Image(systemName: iconName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .frame(width: buttonSize, height: buttonSize)
+                    .font(
+                        .system(
+                            size: ClockTimerStyle.rowPrimaryButtonIconSize,
+                            weight: ClockTimerStyle.rowPrimaryButtonIconWeight
+                        )
+                    )
+                    .frame(
+                        width: ClockTimerStyle.rowPrimaryButtonSize,
+                        height: ClockTimerStyle.rowPrimaryButtonSize
+                    )
                     .foregroundStyle(iconColor)
                     .background(
                         isIdle
-                        ? Circle().fill(Color.green.opacity(0.22))
+                        ? Circle().fill(ClockTimerStyle.rowIdleButtonFill())
                         : nil
                     )
                     .contentShape(Circle())

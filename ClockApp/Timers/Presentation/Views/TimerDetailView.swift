@@ -14,8 +14,6 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    private let lineWidth: CGFloat = 10
-
     var body: some View {
         VStack(spacing: 22) {
             configuredDurationText
