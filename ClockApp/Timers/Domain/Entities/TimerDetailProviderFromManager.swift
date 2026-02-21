@@ -14,6 +14,7 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
 
     // Use this to route "Start" through the Store, so the timer is moved into activeTimers.
     private let onStartRequested: (TimerItem) -> Void
+    private let progressProvider: TimerProgressProviding
 
     init(
         item: TimerItem,
@@ -21,6 +22,7 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
     ) {
         self.item = item
         self.onStartRequested = onStartRequested
+        self.progressProvider = TimerRowProgressProviderFromManager(item: item)
     }
 
     // MARK: - TimerDetailProviding
@@ -34,9 +36,7 @@ final class TimerDetailProviderFromManager: TimerDetailProviding {
     }
 
     func progress(at date: Date) -> Double {
-        let total = max(1.0, item.manager.totalTimeInterval)
-        let remaining = item.manager.remainingInterval(at: date)
-        return remaining / total
+        progressProvider.progress(at: date)
     }
 
     var actionTitle: String {
