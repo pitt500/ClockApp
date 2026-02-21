@@ -12,6 +12,12 @@ struct TimerRowView: View {
     let item: TimerItem
     let onPrimaryAction: () -> Void
 
+    private let buttonSize: CGFloat = 56
+    private let ringLineWidth: CGFloat = 4
+    private let ringPadding: CGFloat = 6
+
+    private var ringSize: CGFloat { buttonSize + (ringPadding * 2) }
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
@@ -75,12 +81,27 @@ struct TimerRowView: View {
     }
 
     private var primaryButton: some View {
-        Button(action: onPrimaryAction) {
-            Image(systemName: primaryButtonIcon)
-                .font(.system(size: 18, weight: .semibold))
-                .frame(width: 56, height: 56)
-                .foregroundStyle(primaryButtonTint)
-                .background(Circle().fill(primaryButtonTint.opacity(0.22)))
+        let progressProvider = TimerRowProgressProviderFromManager(item: item)
+
+        return Button(action: onPrimaryAction) {
+            ZStack {
+                if item.manager.status != .idle {
+                    TimerProgressRing(
+                        size: ringSize,
+                        lineWidth: ringLineWidth,
+                        tint: .orange,
+                        track: .secondary.opacity(0.18),
+                        progress: progressProvider.progress(at:)
+                    )
+                }
+
+                Image(systemName: primaryButtonIcon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: buttonSize, height: buttonSize)
+                    .foregroundStyle(primaryButtonTint)
+                    .background(Circle().fill(primaryButtonTint.opacity(0.22)))
+                    .contentShape(Circle())
+            }
         }
         .buttonStyle(.plain)
     }

@@ -20,25 +20,17 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
         VStack(spacing: 22) {
             configuredDurationText
 
-            ZStack {
-                Circle()
-                    .stroke(.secondary.opacity(0.18), lineWidth: lineWidth)
-
-                TimelineView(.animation) { context in
-                    Circle()
-                        .trim(from: 0, to: provider.progress(at: context.date))
-                        .stroke(
-                            .orange,
-                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                }
-
+            TimerProgressRing(
+                size: ClockTimerStyle.ringSize,
+                lineWidth: lineWidth,
+                tint: .orange,
+                track: .secondary.opacity(0.18),
+                progress: provider.progress(at:)
+            ) {
                 remainingTimeText
                     .font(.system(size: 84, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
-            .frame(width: ClockTimerStyle.ringSize, height: ClockTimerStyle.ringSize)
 
             HStack {
                 circleActionButton(
@@ -191,6 +183,4 @@ private struct PreviewTimerDetailProvider: TimerDetailProviding {
     }
 
     func primaryAction() { }
-
-    func cancel() { }
 }
