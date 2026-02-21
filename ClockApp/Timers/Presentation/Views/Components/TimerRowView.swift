@@ -48,8 +48,11 @@ struct TimerRowView: View {
             ? item.manager.totalTimeInSeconds
             : item.manager.remainingTimeInSeconds
 
-        return Text(durationToShow, format: .time(pattern: timePattern(for: durationToShow)))
-            .monospacedDigit()
+        return Text(
+            durationToShow,
+            format: .time(pattern: timePattern(for: durationToShow))
+        )
+        .monospacedDigit()
     }
 
     private var configuredDurationText: Text {
@@ -64,7 +67,13 @@ struct TimerRowView: View {
         return seconds >= 3600 ? .hourMinuteSecond : .minuteSecond
     }
 
-    private var primaryButtonIcon: String {
+    // MARK: - Button Styling
+
+    private var isIdle: Bool {
+        item.manager.status == .idle
+    }
+
+    private var iconName: String {
         switch item.manager.status {
         case .idle: return "play.fill"
         case .running: return "pause.fill"
@@ -72,12 +81,8 @@ struct TimerRowView: View {
         }
     }
 
-    private var primaryButtonTint: Color {
-        switch item.manager.status {
-        case .idle: return .green
-        case .running: return .orange
-        case .paused: return .green
-        }
+    private var iconColor: Color {
+        isIdle ? .green : .orange
     }
 
     private var primaryButton: some View {
@@ -85,7 +90,9 @@ struct TimerRowView: View {
 
         return Button(action: onPrimaryAction) {
             ZStack {
-                if item.manager.status != .idle {
+
+                // Ring solo cuando no está idle
+                if !isIdle {
                     TimerProgressRing(
                         size: ringSize,
                         lineWidth: ringLineWidth,
@@ -95,11 +102,15 @@ struct TimerRowView: View {
                     )
                 }
 
-                Image(systemName: primaryButtonIcon)
+                Image(systemName: iconName)
                     .font(.system(size: 18, weight: .semibold))
                     .frame(width: buttonSize, height: buttonSize)
-                    .foregroundStyle(primaryButtonTint)
-                    .background(Circle().fill(primaryButtonTint.opacity(0.22)))
+                    .foregroundStyle(iconColor)
+                    .background(
+                        isIdle
+                        ? Circle().fill(Color.green.opacity(0.22))
+                        : nil
+                    )
                     .contentShape(Circle())
             }
         }
