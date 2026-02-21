@@ -21,10 +21,7 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
             configuredDurationText
 
             TimerProgressRing(
-                size: ClockTimerStyle.ringSize,
-                lineWidth: lineWidth,
-                tint: .orange,
-                track: .secondary.opacity(0.18),
+                style: .detail,
                 progress: provider.progress(at:)
             ) {
                 remainingTimeText
@@ -55,7 +52,6 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
                 ) {
                     provider.primaryAction()
                 }
-
             }
             .padding(.horizontal, ClockTimerStyle.horizontalPadding)
 
@@ -112,75 +108,4 @@ struct TimerDetailView<Provider: TimerDetailProviding>: View {
         let seconds = Int(provider.configuredDuration.components.seconds)
         return seconds >= 3600 ? .hourMinuteSecond : .minuteSecond
     }
-}
-
-
-#Preview("Timer Detail - Running") {
-    NavigationStack {
-        TimerDetailView(
-            provider: PreviewTimerDetailProvider.running,
-            onCancel: {}
-        )
-        .preferredColorScheme(.dark)
-    }
-}
-
-#Preview("Timer Detail - Paused") {
-    NavigationStack {
-        TimerDetailView(
-            provider: PreviewTimerDetailProvider.paused,
-            onCancel: {}
-        )
-        .preferredColorScheme(.dark)
-    }
-}
-
-#Preview("Timer Detail - Idle") {
-    NavigationStack {
-        TimerDetailView(
-            provider: PreviewTimerDetailProvider.idle,
-            onCancel: {}
-        )
-        .preferredColorScheme(.dark)
-    }
-}
-
-// MARK: - Preview Provider
-
-private struct PreviewTimerDetailProvider: TimerDetailProviding {
-    let configuredDuration: Duration
-    let remainingDuration: Duration
-    let actionTitle: String
-    let actionTint: Color
-    let progressValue: Double
-
-    static let running = PreviewTimerDetailProvider(
-        configuredDuration: .seconds(80),
-        remainingDuration: .seconds(69),
-        actionTitle: "Pause",
-        actionTint: Color(uiColor: .systemOrange),
-        progressValue: 0.86
-    )
-
-    static let paused = PreviewTimerDetailProvider(
-        configuredDuration: .seconds(80),
-        remainingDuration: .seconds(69),
-        actionTitle: "Resume",
-        actionTint: Color(uiColor: .systemGreen),
-        progressValue: 0.86
-    )
-
-    static let idle = PreviewTimerDetailProvider(
-        configuredDuration: .seconds(80),
-        remainingDuration: .seconds(80),
-        actionTitle: "Start",
-        actionTint: Color(uiColor: .systemGreen),
-        progressValue: 1.0
-    )
-
-    func progress(at date: Date) -> Double {
-        progressValue
-    }
-
-    func primaryAction() { }
 }

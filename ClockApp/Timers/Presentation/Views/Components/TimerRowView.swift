@@ -90,14 +90,9 @@ struct TimerRowView: View {
 
         return Button(action: onPrimaryAction) {
             ZStack {
-
-                // Ring solo cuando no está idle
                 if !isIdle {
                     TimerProgressRing(
-                        size: ringSize,
-                        lineWidth: ringLineWidth,
-                        tint: .orange,
-                        track: .secondary.opacity(0.18),
+                        style: .row,
                         progress: progressProvider.progress(at:)
                     )
                 }
