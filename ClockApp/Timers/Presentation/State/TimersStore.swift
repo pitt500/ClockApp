@@ -34,6 +34,29 @@ final class TimersStore {
     private(set) var activeTimers: [TimerItem] = []
     private(set) var recentTimers: [TimerItem] = []
 
+    // MARK: - Persistence
+
+    private let persistence: TimersPersistence
+
+    init(persistence: TimersPersistence = FileTimersPersistence()) {
+        self.persistence = persistence
+    }
+
+    // MARK: - Persistence API
+
+    func loadRecentTimers() async {
+        if let loaded = try? await persistence.loadRecentTimers() {
+            recentTimers = loaded
+        }
+    }
+
+    private func persistRecents() {
+        let snapshot = recentTimers
+        Task { [persistence] in
+            try? await persistence.saveRecentTimers(snapshot)
+        }
+    }
+
     // MARK: - Intents
 
     /// Creates and starts a new timer from the picker draft.
@@ -118,6 +141,7 @@ final class TimersStore {
 
         // New presets are inserted at the top.
         recentTimers.insert(preset, at: 0)
+        persistRecents()
     }
 
     private func makeActiveTimer(configuredDuration: Duration, label: String) -> TimerItem {
@@ -157,5 +181,6 @@ extension TimersStore {
 
     func deleteRecentTimers(at offsets: IndexSet) {
         recentTimers.remove(atOffsets: offsets)
+        persistRecents()
     }
 }

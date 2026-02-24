@@ -10,6 +10,7 @@ import SwiftUI
 
 struct TimersScreen: View {
     @State private var store = TimersStore()
+    @State private var didLoadRecents = false
 
     var body: some View {
         NavigationStack {
@@ -32,6 +33,11 @@ struct TimersScreen: View {
                     EditButton()
                 }
             }
+        }
+        .task {
+            guard !didLoadRecents else { return }
+            didLoadRecents = true
+            await store.loadRecentTimers()
         }
     }
 
@@ -103,7 +109,6 @@ struct TimersScreen: View {
         }
         .buttonStyle(.plain)
     }
-
 
     private var activeSection: some View {
         Section {

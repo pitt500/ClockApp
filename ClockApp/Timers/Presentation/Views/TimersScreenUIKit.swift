@@ -12,6 +12,7 @@ struct TimersScreenUIKit: View {
     @State private var store = TimersStore()
     @Environment(\.editMode) private var editMode
     @State private var route: Route?
+    @State private var didLoadRecents = false
 
     var body: some View {
         NavigationStack {
@@ -22,6 +23,11 @@ struct TimersScreenUIKit: View {
                 }
                 .navigationDestination(item: $route) { route in
                     detailDestination(for: route)
+                }
+                .task {
+                    guard !didLoadRecents else { return }
+                    didLoadRecents = true
+                    await store.loadRecentTimers()
                 }
         }
     }
