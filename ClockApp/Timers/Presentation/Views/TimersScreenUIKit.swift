@@ -26,8 +26,8 @@ struct TimersScreenUIKit: View {
                 }
                 .task {
                     guard !didLoadRecents else { return }
-                    didLoadRecents = true
                     await store.loadRecentTimers()
+                    didLoadRecents = true
                 }
         }
     }
