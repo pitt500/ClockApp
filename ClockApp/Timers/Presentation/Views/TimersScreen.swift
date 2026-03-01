@@ -166,7 +166,8 @@ struct TimersScreen: View {
         } header: {
             Text("Recents")
                 .font(.title3.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
+                .headerProminence(.increased)
         }
     }
 }

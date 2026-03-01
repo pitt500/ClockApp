@@ -44,8 +44,8 @@ enum ClockTimerStyle {
     // TimerRow idle primary button (green fill)
     static let rowIdleButtonFillOpacity: Double = 0.22
 
-    static var cancelFill: Color { Color.white.opacity(cancelFillOpacity) }
-    static var cancelForeground: Color { .white }
+    static var cancelFill: Color { Color.secondary.opacity(cancelFillOpacity) }
+    static var cancelForeground: Color { .primary }
 
     static func primaryFill(tint: Color) -> Color { tint.opacity(actionFillOpacity) }
     static func primaryForeground(tint: Color) -> Color { tint }
