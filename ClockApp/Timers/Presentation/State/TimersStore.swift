@@ -177,7 +177,12 @@ final class TimersStore {
 extension TimersStore {
     func deleteActiveTimers(at offsets: IndexSet) {
         cancelActiveTimers(at: offsets)
-        activeTimers.remove(atOffsets: offsets)
+        
+        // This is required because there's a SwiftUI Glitch when you delete elements in a list and you have a header like the one I have in this app.
+        //If you are reading this, forgive me and feel free to improve this if you have a better idea.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.activeTimers.remove(atOffsets: offsets)
+        }
     }
 
     private func cancelActiveTimers(at offsets: IndexSet) {
