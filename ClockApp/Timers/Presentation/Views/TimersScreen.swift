@@ -139,7 +139,7 @@ struct TimersScreen: View {
     }
 
     private var recentsSection: some View {
-        Section("Recents") {
+        Section {
             ForEach(store.recentTimers) { item in
                 NavigationLink {
                     TimerDetailView(
@@ -163,6 +163,10 @@ struct TimersScreen: View {
             .onDelete { offsets in
                 store.deleteRecentTimers(at: offsets)
             }
+        } header: {
+            Text("Recents")
+                .font(.title3.bold())
+                .foregroundStyle(.white)
         }
     }
 }
