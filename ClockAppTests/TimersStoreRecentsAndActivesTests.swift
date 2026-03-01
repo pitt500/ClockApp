@@ -153,5 +153,39 @@ struct TimersStoreRecentsAndActivesTests {
         #expect(store.recentTimers.count == 1)
         #expect(store.activeTimers.count == 2)
     }
+    
+    @Test
+    func `Deleting an active timer cancels it and it stops ticking`() async {
+        let store = TimersStore()
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 3)
+        store.startFromDraft()
+
+        #expect(store.activeTimers.count == 1)
+
+        let manager = store.activeTimers[0].manager
+
+        #expect(manager.status == .running)
+
+        // Let it tick at least once.
+        try? await Task.sleep(for: .seconds(1.2))
+
+        let beforeDelete = manager.remainingTimeInSeconds
+
+        store.deleteActiveTimers(at: IndexSet(integer: 0))
+
+        #expect(store.activeTimers.isEmpty)
+
+        // If cancel() was called, the manager is reset to idle and remaining time goes back to total.
+        #expect(manager.status == .idle)
+        #expect(manager.remainingTimeInSeconds == .seconds(3))
+
+        // Wait longer than the original duration; it should not tick anymore.
+        try? await Task.sleep(for: .seconds(2.0))
+
+        #expect(manager.status == .idle)
+        #expect(manager.remainingTimeInSeconds == .seconds(3))
+        #expect(manager.remainingTimeInSeconds >= beforeDelete)
+    }
 
 }
