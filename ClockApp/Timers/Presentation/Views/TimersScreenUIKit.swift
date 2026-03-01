@@ -372,8 +372,11 @@ private struct TimersTableView: UIViewRepresentable {
 
             let label = UILabel()
             label.text = "Recents"
-            label.textColor = .secondaryLabel
-            label.font = UIFont.preferredFont(forTextStyle: .headline)
+            label.textColor = .label
+            
+            let base = UIFont.systemFont(ofSize: 21, weight: .bold)
+            label.font = UIFontMetrics(forTextStyle: .title3).scaledFont(for: base)
+            label.adjustsFontForContentSizeCategory = true
 
             let container = UIView()
             container.backgroundColor = .clear
