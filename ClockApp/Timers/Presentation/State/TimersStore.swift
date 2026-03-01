@@ -176,7 +176,17 @@ final class TimersStore {
 
 extension TimersStore {
     func deleteActiveTimers(at offsets: IndexSet) {
+        cancelActiveTimers(at: offsets)
         activeTimers.remove(atOffsets: offsets)
+    }
+
+    private func cancelActiveTimers(at offsets: IndexSet) {
+        let timersToCancel = offsets
+            .compactMap { index in
+                activeTimers.indices.contains(index) ? activeTimers[index] : nil
+            }
+
+        timersToCancel.forEach { $0.manager.cancel() }
     }
 
     func deleteRecentTimers(at offsets: IndexSet) {
