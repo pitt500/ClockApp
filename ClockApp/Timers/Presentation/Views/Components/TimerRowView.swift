@@ -42,11 +42,18 @@ struct TimerRowView: View {
             ? item.manager.totalTimeInSeconds
             : item.manager.remainingTimeInSeconds
 
-        return Text(
-            durationToShow,
-            format: .time(pattern: timePattern(for: durationToShow))
-        )
-        .monospacedDigit()
+        let totalSeconds = max(0, Int(durationToShow.components.seconds))
+
+        if totalSeconds < 60 {
+            return Text("\(totalSeconds)")
+                .monospacedDigit()
+        } else {
+            return Text(
+                durationToShow,
+                format: .time(pattern: timePattern(for: durationToShow))
+            )
+            .monospacedDigit()
+        }
     }
 
     private var configuredDurationText: Text {
