@@ -6,7 +6,20 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5C792D42F572DC800CCDA3A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5C792D32F572DC800CCDA3A /* WidgetKit.framework */; };
+		B5C792D62F572DC800CCDA3A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5C792D52F572DC800CCDA3A /* SwiftUI.framework */; };
+		B5C792E32F572DCA00CCDA3A /* TimerLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B5C792D12F572DC800CCDA3A /* TimerLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		B5C792E12F572DCA00CCDA3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5DA87942F1FC723002700F9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B5C792D02F572DC800CCDA3A;
+			remoteInfo = TimerLiveActivityExtension;
+		};
 		B5FD860D2F3A2C2D00268CEB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B5DA87942F1FC723002700F9 /* Project object */;
@@ -16,14 +29,62 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		B5C792E82F572DCA00CCDA3A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B5C792E32F572DCA00CCDA3A /* TimerLiveActivityExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		B5C792D12F572DC800CCDA3A /* TimerLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TimerLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5C792D32F572DC800CCDA3A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B5C792D52F572DC800CCDA3A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		B5DA879C2F1FC723002700F9 /* ClockApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClockApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5FD86092F3A2C2D00268CEB /* ClockAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClockAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B5C792E42F572DCA00CCDA3A /* Exceptions for "TimerLiveActivity" folder in "TimerLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B5C792D02F572DC800CCDA3A /* TimerLiveActivityExtension */;
+		};
+		B5C792EA2F572E0800CCDA3A /* Exceptions for "ClockApp" folder in "TimerLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Timers/Shared/LiveActivities/TimerAttributes.swift,
+				Timers/Shared/Views/LockScreenTimerLiveActivityView.swift,
+				Timers/Shared/Views/MinimalTimerLiveActivityView.swift,
+				Timers/Shared/Views/TimerControlButton.swift,
+			);
+			target = B5C792D02F572DC800CCDA3A /* TimerLiveActivityExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B5C792D72F572DC800CCDA3A /* TimerLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B5C792E42F572DCA00CCDA3A /* Exceptions for "TimerLiveActivity" folder in "TimerLiveActivityExtension" target */,
+			);
+			path = TimerLiveActivity;
+			sourceTree = "<group>";
+		};
 		B5DA879E2F1FC723002700F9 /* ClockApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B5C792EA2F572E0800CCDA3A /* Exceptions for "ClockApp" folder in "TimerLiveActivityExtension" target */,
+			);
 			path = ClockApp;
 			sourceTree = "<group>";
 		};
@@ -35,6 +96,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B5C792CE2F572DC800CCDA3A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5C792D62F572DC800CCDA3A /* SwiftUI.framework in Frameworks */,
+				B5C792D42F572DC800CCDA3A /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5DA87992F1FC723002700F9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -52,11 +122,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B5C792D22F572DC800CCDA3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B5C792D32F572DC800CCDA3A /* WidgetKit.framework */,
+				B5C792D52F572DC800CCDA3A /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B5DA87932F1FC723002700F9 = {
 			isa = PBXGroup;
 			children = (
 				B5DA879E2F1FC723002700F9 /* ClockApp */,
 				B5FD860A2F3A2C2D00268CEB /* ClockAppTests */,
+				B5C792D72F572DC800CCDA3A /* TimerLiveActivity */,
+				B5C792D22F572DC800CCDA3A /* Frameworks */,
 				B5DA879D2F1FC723002700F9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +147,7 @@
 			children = (
 				B5DA879C2F1FC723002700F9 /* ClockApp.app */,
 				B5FD86092F3A2C2D00268CEB /* ClockAppTests.xctest */,
+				B5C792D12F572DC800CCDA3A /* TimerLiveActivityExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,6 +155,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B5C792D02F572DC800CCDA3A /* TimerLiveActivityExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5C792E52F572DCA00CCDA3A /* Build configuration list for PBXNativeTarget "TimerLiveActivityExtension" */;
+			buildPhases = (
+				B5C792CD2F572DC800CCDA3A /* Sources */,
+				B5C792CE2F572DC800CCDA3A /* Frameworks */,
+				B5C792CF2F572DC800CCDA3A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B5C792D72F572DC800CCDA3A /* TimerLiveActivity */,
+			);
+			name = TimerLiveActivityExtension;
+			packageProductDependencies = (
+			);
+			productName = TimerLiveActivityExtension;
+			productReference = B5C792D12F572DC800CCDA3A /* TimerLiveActivityExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B5DA879B2F1FC723002700F9 /* ClockApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B5DA87A72F1FC724002700F9 /* Build configuration list for PBXNativeTarget "ClockApp" */;
@@ -80,10 +184,12 @@
 				B5DA87982F1FC723002700F9 /* Sources */,
 				B5DA87992F1FC723002700F9 /* Frameworks */,
 				B5DA879A2F1FC723002700F9 /* Resources */,
+				B5C792E82F572DCA00CCDA3A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B5C792E22F572DCA00CCDA3A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B5DA879E2F1FC723002700F9 /* ClockApp */,
@@ -128,6 +234,9 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					B5C792D02F572DC800CCDA3A = {
+						CreatedOnToolsVersion = 26.3;
+					};
 					B5DA879B2F1FC723002700F9 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -153,11 +262,19 @@
 			targets = (
 				B5DA879B2F1FC723002700F9 /* ClockApp */,
 				B5FD86082F3A2C2D00268CEB /* ClockAppTests */,
+				B5C792D02F572DC800CCDA3A /* TimerLiveActivityExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B5C792CF2F572DC800CCDA3A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5DA879A2F1FC723002700F9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -175,6 +292,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B5C792CD2F572DC800CCDA3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B5DA87982F1FC723002700F9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -192,6 +316,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B5C792E22F572DCA00CCDA3A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B5C792D02F572DC800CCDA3A /* TimerLiveActivityExtension */;
+			targetProxy = B5C792E12F572DCA00CCDA3A /* PBXContainerItemProxy */;
+		};
 		B5FD860E2F3A2C2D00268CEB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B5DA879B2F1FC723002700F9 /* ClockApp */;
@@ -200,6 +329,66 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		B5C792E62F572DCA00CCDA3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LHJA6J73E9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TimerLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TimerLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftandtips.ClockApp.TimerLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B5C792E72F572DCA00CCDA3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LHJA6J73E9;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TimerLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TimerLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftandtips.ClockApp.TimerLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		B5DA87A52F1FC724002700F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -430,6 +619,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B5C792E52F572DCA00CCDA3A /* Build configuration list for PBXNativeTarget "TimerLiveActivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5C792E62F572DCA00CCDA3A /* Debug */,
+				B5C792E72F572DCA00CCDA3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B5DA87972F1FC723002700F9 /* Build configuration list for PBXProject "ClockApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
