@@ -37,9 +37,14 @@ final class TimersStore {
     // MARK: - Persistence
 
     private let persistence: TimersPersistence
+    private let activityHandler: TimerActivityHandling
 
-    init(persistence: TimersPersistence = FileTimersPersistence()) {
+    init(
+        persistence: TimersPersistence = FileTimersPersistence(),
+        activityHandler: TimerActivityHandling = TimerActivityController()
+    ) {
         self.persistence = persistence
+        self.activityHandler = activityHandler
     }
 
     // MARK: - Persistence API
@@ -148,7 +153,7 @@ final class TimersStore {
         TimerItem(
             label: label,
             configuredDuration: configuredDuration,
-            manager: TimerManager()
+            manager: TimerManager(activityHandler: activityHandler)
         )
     }
 
