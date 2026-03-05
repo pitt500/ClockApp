@@ -16,7 +16,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting from draft adds a preset to recents and creates one active timer`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10)
         store.startFromDraft()
@@ -33,7 +33,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting the same duration twice does not duplicate recents but creates another active timer`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10)
         store.startFromDraft()
@@ -53,7 +53,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting a different duration adds a second preset to recents`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10)
         store.startFromDraft()
@@ -74,7 +74,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting a recent preset creates a new active timer while keeping the preset in recents`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10)
         store.startFromDraft()
@@ -101,7 +101,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting the same recent preset multiple times creates multiple active timers`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10)
         store.startFromDraft()
@@ -124,7 +124,7 @@ struct TimersStoreRecentsAndActivesTests {
     
     @Test
     func `Starting same duration with different label adds a second preset to recents`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "")
         store.startFromDraft()
@@ -142,7 +142,7 @@ struct TimersStoreRecentsAndActivesTests {
 
     @Test
     func `Starting same duration with same label does not duplicate recents`() {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Alarm")
         store.startFromDraft()
@@ -156,7 +156,7 @@ struct TimersStoreRecentsAndActivesTests {
     
     @Test
     func `Deleting an active timer cancels it and it stops ticking`() async {
-        let store = TimersStore()
+        let store = TimersStore(activityHandler: NoopTimerActivityHandler())
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 3)
         store.startFromDraft()
@@ -174,6 +174,8 @@ struct TimersStoreRecentsAndActivesTests {
 
         store.deleteActiveTimers(at: IndexSet(integer: 0))
 
+        // This delay is needed to wait for the DispatchQueue.main.asyncAfter wrapping the actual deletion from store.deleteActiveTimers
+        try? await Task.sleep(for: .seconds(1))
         #expect(store.activeTimers.isEmpty)
 
         // If cancel() was called, the manager is reset to idle and remaining time goes back to total.
