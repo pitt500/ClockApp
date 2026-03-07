@@ -62,6 +62,11 @@
 		B5C792EA2F572E0800CCDA3A /* Exceptions for "ClockApp" folder in "TimerLiveActivityExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Timers/Domain/Entities/TimerLiveActivityProgressProvider.swift,
+				Timers/Domain/Interfaces/TimerProgressProviding.swift,
+				Timers/Presentation/Views/Components/TimerProgressRing.swift,
+				Timers/Presentation/Views/Styles/ClockTimerStyle.swift,
+				Timers/Presentation/Views/Styles/TimerProgressRingStyle.swift,
 				Timers/Shared/LiveActivities/TimerAttributes.swift,
 				Timers/Shared/Views/LockScreenTimerLiveActivityView.swift,
 				Timers/Shared/Views/MinimalTimerLiveActivityView.swift,

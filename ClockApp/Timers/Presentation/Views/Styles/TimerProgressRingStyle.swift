@@ -39,4 +39,9 @@ extension TimerProgressRingStyle {
         size: ClockTimerStyle.rowRingSize,
         lineWidth: ClockTimerStyle.rowRingLineWidth
     )
+    
+    static let liveActivity = TimerProgressRingStyle(
+        size: ClockTimerStyle.activityRingSize,
+        lineWidth: ClockTimerStyle.activityRingLineWidth
+    )
 }

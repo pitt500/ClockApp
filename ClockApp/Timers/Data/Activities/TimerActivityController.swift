@@ -6,67 +6,72 @@
 //
 
 
-import SwiftUI
 import ActivityKit
+import Foundation
 
-@Observable
 final class TimerActivityController: TimerActivityHandling {
     private var activity: Activity<TimerAttributes>?
-    private var totalTime: Duration = .seconds(0)
+    private var label: String = ""
 
-    func start(for manager: TimerManager, title: String = "Timer Demo") {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+    func start(for manager: TimerManager, title: String) {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("Live Activities are not enabled")
+            return
+        }
 
-        totalTime = manager.totalTimeInSeconds
-        
         let attributes = TimerAttributes(title: title)
-        let contentState = TimerAttributes.ContentState(
-            remainingTime: manager.remainingTimeInSeconds,
-            totalTime: manager.totalTimeInSeconds,
-            isPaused: false
-        )
+        let state = makeState(from: manager)
 
         do {
             activity = try Activity.request(
                 attributes: attributes,
-                content: .init(
-                    state: contentState,
-                    staleDate: nil // Tells the system when your content becomes outdated.
-                ),
-                pushType: nil, // local-only
+                content: .init(state: state, staleDate: nil),
+                pushType: nil
             )
         } catch {
             print("Failed to start activity: \(error)")
         }
     }
 
-    func update(remainingTime: Duration, isPaused: Bool) {
+    func update(for manager: TimerManager) {
         guard let activity else { return }
-
-        let contentState = TimerAttributes.ContentState(
-            remainingTime: remainingTime,
-            totalTime: totalTime,
-            isPaused: isPaused
-        )
+        let state = makeState(from: manager)
 
         Task {
-            await activity.update(.init(state: contentState, staleDate: nil))
+            await activity.update(.init(state: state, staleDate: nil))
         }
     }
 
     func end() {
         guard let activity else { return }
-        
-        let contentState = TimerAttributes.ContentState(
-            remainingTime: .seconds(0),
-            totalTime: totalTime,
-            isPaused: true
-        )
-        
+
         Task {
-            await activity.end(.init(state: contentState, staleDate: nil), dismissalPolicy: .immediate)
+            await activity.end(.init(state: activity.content.state, staleDate: nil), dismissalPolicy: .immediate)
+            self.activity = nil
         }
-        self.activity = nil
+    }
+
+#warning("Fix this")
+    private func makeState(from manager: TimerManager) -> TimerAttributes.ContentState {
+        let now = Date.now
+        let remaining = manager.remainingInterval(at: now)
+
+        let status: TimerStatus
+        switch manager.status {
+        case .idle: status = .idle
+        case .running: status = .running
+        case .paused: status = .paused
+        }
+
+        let endDate: Date? = (manager.status == .running) ? now.addingTimeInterval(remaining) : nil
+        let remainingWhenNotRunning: TimeInterval = (manager.status == .running) ? 0 : remaining
+
+        return .init(
+            status: status,
+            totalTimeInterval: manager.totalTimeInterval,
+            endDate: endDate,
+            remainingWhenNotRunning: remainingWhenNotRunning,
+            label: "" 
+        )
     }
 }
-

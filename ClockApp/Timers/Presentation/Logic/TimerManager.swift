@@ -104,7 +104,7 @@ final class TimerManager {
         stopUnderlyingTimer()
 
         syncRemainingTime(now: now)
-        activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: true)
+        activityHandler?.update(for: self)
     }
 
     func resume() {
@@ -113,7 +113,7 @@ final class TimerManager {
 
         enterRunning(
             interval: remainingTimeWhenNotRunning,
-            activity: .update(isPaused: false)
+            activity: .update
         )
     }
 
@@ -138,7 +138,7 @@ final class TimerManager {
 
     private enum ActivityTransition {
         case start(title: String)
-        case update(isPaused: Bool)
+        case update
     }
 
     private func configure(totalTime: Duration) {
@@ -156,8 +156,8 @@ final class TimerManager {
         switch activity {
         case .start(let title):
             activityHandler?.start(for: self, title: title)
-        case .update(let isPaused):
-            activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: isPaused)
+        case .update:
+            activityHandler?.update(for: self)
         }
 
         syncRemainingTime(now: now())
@@ -180,7 +180,7 @@ final class TimerManager {
 
         let now = now()
         syncRemainingTime(now: now)
-        activityHandler?.update(remainingTime: remainingTimeInSeconds, isPaused: false)
+        activityHandler?.update(for: self)
 
         if now >= endDate {
             finishNaturally()

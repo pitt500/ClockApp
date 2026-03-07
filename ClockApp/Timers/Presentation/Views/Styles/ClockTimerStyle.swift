@@ -33,6 +33,11 @@ enum ClockTimerStyle {
     static var rowRingSize: CGFloat {
         rowPrimaryButtonSize + (rowRingPadding * 2)
     }
+    
+    // Live activity
+    
+    static let activityRingSize: CGFloat = 16
+    static let activityRingLineWidth: CGFloat = 2
 
     // MARK: - Colors
 

@@ -10,6 +10,6 @@
 // without introducing Live Activities yet.
 struct NoopTimerActivityHandler: TimerActivityHandling {
     func start(for manager: TimerManager, title: String) {}
-    func update(remainingTime: Duration, isPaused: Bool) {}
+    func update(for manager: TimerManager) {}
     func end() {}
 }
