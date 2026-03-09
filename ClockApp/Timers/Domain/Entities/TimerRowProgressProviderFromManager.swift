@@ -16,8 +16,17 @@ final class TimerRowProgressProviderFromManager: TimerProgressProviding {
     }
 
     func progress(at date: Date) -> Double {
-        let total = max(1.0, item.manager.totalTimeInterval)
-        let remaining = item.manager.remainingInterval(at: date)
-        return remaining / total
+        snapshot(at: date).progress(at: date)
+    }
+
+    private func snapshot(at date: Date) -> TimerProgressSnapshot {
+        let manager = item.manager
+        let remaining = manager.remainingInterval(at: date)
+
+        return TimerProgressSnapshot(
+            totalTimeInterval: manager.totalTimeInterval,
+            endDate: manager.status == .running ? date.addingTimeInterval(remaining) : nil,
+            remainingWhenNotRunning: manager.status == .running ? 0 : remaining
+        )
     }
 }

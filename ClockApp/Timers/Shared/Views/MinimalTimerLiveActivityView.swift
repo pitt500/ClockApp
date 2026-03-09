@@ -28,8 +28,9 @@ struct MinimalTimerLiveActivityView: View {
     MinimalTimerLiveActivityView(
         state: .init(
             status: .running,
-            totalTimeInterval: 5000,
-            remainingWhenNotRunning: 3000,
+            totalTimeInterval: 30.5,
+            endDate: Date.now.addingTimeInterval(25),
+            remainingWhenNotRunning: 0,
             label: "Preview"
         )
     )

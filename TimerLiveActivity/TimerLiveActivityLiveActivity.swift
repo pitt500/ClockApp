@@ -30,9 +30,11 @@ struct TimerLiveActivityConfiguration: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(spacing: 6) {
-                        Text("Subscribe to @swiftandtips!")
-                        Text(formattedRemainingTime(for: context.state, at: .now))
+                    TimelineView(.animation) { timeline in
+                        VStack(spacing: 6) {
+                            Text("Subscribe to @swiftandtips!")
+                            Text(formattedRemainingTime(for: context.state, at: timeline.date))
+                        }
                     }
                 }
             } compactLeading: {
@@ -53,16 +55,17 @@ struct TimerLiveActivityConfiguration: Widget {
         state.status == .paused
     }
 
-    private func remainingInterval(for state: TimerAttributes.ContentState, at date: Date) -> TimeInterval {
-        if state.status == .running, let endDate = state.endDate {
-            return max(0, endDate.timeIntervalSince(date))
-        }
-
-        return max(0, state.remainingWhenNotRunning)
+    private func snapshot(for state: TimerAttributes.ContentState) -> TimerProgressSnapshot {
+        TimerProgressSnapshot(
+            totalTimeInterval: state.totalTimeInterval,
+            endDate: state.endDate,
+            remainingWhenNotRunning: state.remainingWhenNotRunning
+        )
     }
 
+#warning("Fix Time format")
     private func formattedRemainingTime(for state: TimerAttributes.ContentState, at date: Date) -> String {
-        let seconds = max(0, Int(remainingInterval(for: state, at: date)))
+        let seconds = max(0, Int(snapshot(for: state).remainingInterval(at: date)))
 
         if seconds < 60 {
             return "\(seconds) seconds remaining"
@@ -78,8 +81,9 @@ struct TimerLiveActivityConfiguration: Widget {
         }
     }
 
+    #warning("Fix Time format")
     private func formattedCompactTrailingTime(for state: TimerAttributes.ContentState, at date: Date) -> String {
-        let seconds = max(0, Int(remainingInterval(for: state, at: date)))
+        let seconds = max(0, Int(snapshot(for: state).remainingInterval(at: date)))
 
         if seconds < 60 {
             return "\(seconds)"

@@ -162,8 +162,8 @@ struct TimerManagerTests {
             startCalls.append(title)
         }
 
-        func update(remainingTime: Duration, isPaused: Bool) {
-            updates.append((remaining: remainingTime, isPaused: isPaused))
+        func update(for manager: TimerManager) {
+            updates.append((remaining: manager.remainingTimeInSeconds, isPaused: manager.status == .paused))
         }
 
         func end() {

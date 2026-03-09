@@ -13,6 +13,8 @@ struct LockScreenTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
     
     var body: some View {
+        let provider = TimerLiveActivityProgressProvider(state: state)
+
         VStack(spacing: 8) {
             if let endDate = state.endDate {
                 Text(
@@ -22,7 +24,7 @@ struct LockScreenTimerLiveActivityView: View {
                 .font(.system(size: 34, weight: .light, design: .rounded))
                 .monospacedDigit()
             } else {
-                Text(formattedRemainingTime)
+                Text(formattedRemainingTime(using: provider.snapshot, at: .now))
                     .font(.system(size: 34, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
@@ -30,11 +32,11 @@ struct LockScreenTimerLiveActivityView: View {
         .activityBackgroundTint(Color.cyan)
         .activitySystemActionForegroundColor(Color.black)
     }
-    
-    #warning("Fix this")
-    private var formattedRemainingTime: String {
-        let seconds = max(0, Int(state.remainingWhenNotRunning))
-        
+
+#warning("Fix time format")
+    private func formattedRemainingTime(using snapshot: TimerProgressSnapshot, at date: Date) -> String {
+        let seconds = max(0, Int(snapshot.remainingInterval(at: date)))
+
         if seconds < 60 {
             return "\(seconds)"
         } else if seconds < 3600 {

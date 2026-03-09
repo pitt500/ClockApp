@@ -46,32 +46,43 @@ final class TimerActivityController: TimerActivityHandling {
         guard let activity else { return }
 
         Task {
-            await activity.end(.init(state: activity.content.state, staleDate: nil), dismissalPolicy: .immediate)
+            await activity.end(
+                .init(state: activity.content.state, staleDate: nil),
+                dismissalPolicy: .immediate
+            )
             self.activity = nil
         }
     }
 
-#warning("Fix this")
     private func makeState(from manager: TimerManager) -> TimerAttributes.ContentState {
         let now = Date.now
         let remaining = manager.remainingInterval(at: now)
 
         let status: TimerStatus
         switch manager.status {
-        case .idle: status = .idle
-        case .running: status = .running
-        case .paused: status = .paused
+        case .idle:
+            status = .idle
+        case .running:
+            status = .running
+        case .paused:
+            status = .paused
         }
 
-        let endDate: Date? = (manager.status == .running) ? now.addingTimeInterval(remaining) : nil
-        let remainingWhenNotRunning: TimeInterval = (manager.status == .running) ? 0 : remaining
+        let endDate: Date? = manager.status == .running
+            ? now.addingTimeInterval(remaining)
+            : nil
+
+        let remainingWhenNotRunning: TimeInterval = manager.status == .running
+            ? 0
+            : remaining
+        
 
         return .init(
             status: status,
             totalTimeInterval: manager.totalTimeInterval,
             endDate: endDate,
             remainingWhenNotRunning: remainingWhenNotRunning,
-            label: "" 
+            label: ""
         )
     }
 }
