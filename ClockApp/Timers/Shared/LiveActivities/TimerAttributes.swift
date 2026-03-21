@@ -35,3 +35,13 @@ extension TimerAttributes.ContentState {
         return startDate...endDate
     }
 }
+
+extension TimerAttributes.ContentState {
+    var progressSnapshot: TimerProgressSnapshot {
+        TimerProgressSnapshot(
+            totalTimeInterval: totalTimeInterval,
+            endDate: endDate,
+            remainingWhenNotRunning: remainingWhenNotRunning
+        )
+    }
+}

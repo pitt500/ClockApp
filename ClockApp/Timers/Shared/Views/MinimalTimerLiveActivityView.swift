@@ -29,7 +29,7 @@ struct MinimalTimerLiveActivityView: View {
                 height: ClockTimerStyle.activityRingSize
             )
         } else {
-            ProgressView(value: pausedProgress, total: 1.0)
+            ProgressView(value: state.progressSnapshot.progress(at: .now), total: 1.0)
                 .progressViewStyle(.circular)
                 .tint(.orange)
                 .frame(
@@ -37,13 +37,6 @@ struct MinimalTimerLiveActivityView: View {
                     height: ClockTimerStyle.activityRingSize
                 )
         }
-    }
-
-    #warning("Review this later")
-    private var pausedProgress: Double {
-        let total = max(1.0, state.totalTimeInterval)
-        let remaining = max(0, state.remainingWhenNotRunning)
-        return remaining / total
     }
 }
 
