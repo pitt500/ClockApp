@@ -75,6 +75,10 @@ final class TimerManager {
         max(0, totalTimeInSeconds.toTimeInterval() + finishGrace)
     }
 
+    var displayedRemainingTime: Duration {
+        Duration.seconds(projectedLabelSeconds(now: now()))
+    }
+
     var onDidFinish: (() -> Void)?
 
     func setTimer(totalTime: Duration) {

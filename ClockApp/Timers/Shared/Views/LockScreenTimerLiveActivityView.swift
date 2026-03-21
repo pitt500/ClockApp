@@ -48,7 +48,7 @@ struct LockScreenTimerLiveActivityView: View {
 
     #warning("Fix format")
     private var formattedRemainingTime: String {
-        let seconds = max(0, Int(state.remainingWhenNotRunning))
+        let seconds = max(0, state.displayedRemainingTime.components.seconds)
 
         if seconds < 60 {
             return "\(seconds)"

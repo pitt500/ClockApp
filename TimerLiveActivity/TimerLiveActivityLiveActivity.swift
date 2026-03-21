@@ -113,19 +113,27 @@ struct TimerLiveActivityConfiguration: Widget {
 
     #warning("Fix this format")
     private func formattedPausedTime(for state: TimerAttributes.ContentState) -> String {
-        let seconds = max(0, Int(state.remainingWhenNotRunning))
+        let seconds = max(0, state.displayedRemainingTime.components.seconds)
 
-        if seconds < 60 {
-            return "\(seconds)"
-        } else if seconds < 3600 {
+        if seconds < 3600 {
             let minutes = seconds / 60
             let remainingSeconds = seconds % 60
-            return "\(minutes):" + String(format: "%02d", remainingSeconds)
+
+            return [minutes, remainingSeconds]
+                .map { value in
+                    value.formatted(.number.precision(.integerLength(2)))
+                }
+                .joined(separator: ":")
         } else {
             let hours = seconds / 3600
             let minutes = (seconds % 3600) / 60
             let remainingSeconds = seconds % 60
-            return "\(hours):" + String(format: "%02d:%02d", minutes, remainingSeconds)
+
+            return [hours, minutes, remainingSeconds]
+                .map { value in
+                    value.formatted(.number.precision(.integerLength(2)))
+                }
+                .joined(separator: ":")
         }
     }
 }
@@ -143,6 +151,7 @@ extension TimerAttributes.ContentState {
             totalTimeInterval: 30000.5,
             endDate: Date.now.addingTimeInterval(25000),
             remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(25000),
             label: "Demo"
         )
     }
@@ -153,6 +162,7 @@ extension TimerAttributes.ContentState {
             totalTimeInterval: 120.5,
             endDate: Date.now.addingTimeInterval(70),
             remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(70),
             label: "Demo"
         )
     }

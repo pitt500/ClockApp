@@ -15,6 +15,7 @@ struct TimerAttributes: ActivityAttributes {
         var totalTimeInterval: TimeInterval
         var endDate: Date?
         var remainingWhenNotRunning: TimeInterval
+        var displayedRemainingTime: Duration
         var label: String
     }
 

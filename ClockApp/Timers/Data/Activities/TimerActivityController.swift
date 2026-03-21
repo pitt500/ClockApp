@@ -82,6 +82,7 @@ final class TimerActivityController: TimerActivityHandling {
             totalTimeInterval: manager.totalTimeInterval,
             endDate: endDate,
             remainingWhenNotRunning: remainingWhenNotRunning,
+            displayedRemainingTime: manager.displayedRemainingTime,
             label: ""
         )
     }
