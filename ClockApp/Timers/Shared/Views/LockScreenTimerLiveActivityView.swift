@@ -14,7 +14,7 @@ struct LockScreenTimerLiveActivityView: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            if let timerInterval {
+            if let timerInterval = state.runningTimeInterval {
                 Text(
                     timerInterval: timerInterval,
                     pauseTime: nil,
@@ -31,13 +31,6 @@ struct LockScreenTimerLiveActivityView: View {
         }
         .activityBackgroundTint(Color.cyan)
         .activitySystemActionForegroundColor(Color.black)
-    }
-
-    #warning("Code duplicated")
-    private var timerInterval: ClosedRange<Date>? {
-        guard state.status == .running, let endDate = state.endDate else { return nil }
-        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
-        return startDate...endDate
     }
 
     private var showsHours: Bool {

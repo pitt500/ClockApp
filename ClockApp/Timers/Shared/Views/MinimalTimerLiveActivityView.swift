@@ -12,9 +12,8 @@ import WidgetKit
 struct MinimalTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
     
-    #warning("Review Paused State")
     var body: some View {
-        if let timerInterval {
+        if let timerInterval = state.runningTimeInterval {
             ProgressView(
                 timerInterval: timerInterval,
                 countsDown: true
@@ -38,13 +37,6 @@ struct MinimalTimerLiveActivityView: View {
                     height: ClockTimerStyle.activityRingSize
                 )
         }
-    }
-
-#warning("Review this later")
-    private var timerInterval: ClosedRange<Date>? {
-        guard state.status == .running, let endDate = state.endDate else { return nil }
-        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
-        return startDate...endDate
     }
 
     #warning("Review this later")

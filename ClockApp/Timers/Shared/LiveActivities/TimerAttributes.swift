@@ -27,3 +27,11 @@ enum TimerStatus: String, Codable, Hashable {
     case running
     case paused
 }
+
+extension TimerAttributes.ContentState {
+    var runningTimeInterval: ClosedRange<Date>? {
+        guard status == .running, let endDate else { return nil }
+        let startDate = endDate.addingTimeInterval(-totalTimeInterval)
+        return startDate...endDate
+    }
+}

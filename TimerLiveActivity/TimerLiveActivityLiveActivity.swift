@@ -95,7 +95,9 @@ struct TimerLiveActivityConfiguration: Widget {
         }
     }
 
-    #warning("Is it necessary to call showHours again?")
+    /*
+     This placeholder is required because Text(timerInterval:) expands to the maximum possible width of its content in the Dynamic Island, causing layout issues. By providing a fixed-width placeholder (e.g. “00:00” or “00:00:00”) and overlaying the real timer on top, we ensure the layout remains stable and only occupies the necessary space.
+    */
     private func placeholderFormat(for state: TimerAttributes.ContentState) -> String {
         showsHours(for: state) ? "00:00:00" : "00:00"
     }
