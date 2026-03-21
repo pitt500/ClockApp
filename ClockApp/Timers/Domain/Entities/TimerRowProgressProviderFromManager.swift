@@ -19,7 +19,6 @@ final class TimerRowProgressProviderFromManager: TimerProgressProviding {
         snapshot(at: date).progress(at: date)
     }
 
-    #warning("Review if this logic is duplicated")
     private func snapshot(at date: Date) -> TimerProgressSnapshot {
         let manager = item.manager
         let remaining = manager.remainingInterval(at: date)
