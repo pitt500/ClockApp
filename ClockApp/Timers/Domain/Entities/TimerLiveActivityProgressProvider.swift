@@ -15,6 +15,7 @@ struct TimerLiveActivityProgressProvider: TimerProgressProviding {
         snapshot.progress(at: date)
     }
 
+#warning("Review if this logic is duplicated")
     var snapshot: TimerProgressSnapshot {
         TimerProgressSnapshot(
             totalTimeInterval: state.totalTimeInterval,

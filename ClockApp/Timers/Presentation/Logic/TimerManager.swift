@@ -180,7 +180,6 @@ final class TimerManager {
 
         let now = now()
         syncRemainingTime(now: now)
-        activityHandler?.update(for: self)
 
         if now >= endDate {
             finishNaturally()

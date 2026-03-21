@@ -12,15 +12,46 @@ import WidgetKit
 struct MinimalTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
     
+    #warning("Review Paused State")
     var body: some View {
-        let provider = TimerLiveActivityProgressProvider(state: state)
-
-        TimelineView(.animation) { timeline in
-            TimerProgressRing(
-                style: .liveActivity,
-                progress: { _ in provider.progress(at: timeline.date) }
+        if let timerInterval {
+            ProgressView(
+                timerInterval: timerInterval,
+                countsDown: true
+            ) {
+                EmptyView()
+            } currentValueLabel: {
+                EmptyView()
+            }
+            .progressViewStyle(.circular)
+            .tint(.orange)
+            .frame(
+                width: ClockTimerStyle.activityRingSize,
+                height: ClockTimerStyle.activityRingSize
             )
+        } else {
+            ProgressView(value: pausedProgress, total: 1.0)
+                .progressViewStyle(.circular)
+                .tint(.orange)
+                .frame(
+                    width: ClockTimerStyle.activityRingSize,
+                    height: ClockTimerStyle.activityRingSize
+                )
         }
+    }
+
+#warning("Review this later")
+    private var timerInterval: ClosedRange<Date>? {
+        guard state.status == .running, let endDate = state.endDate else { return nil }
+        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
+        return startDate...endDate
+    }
+
+    #warning("Review this later")
+    private var pausedProgress: Double {
+        let total = max(1.0, state.totalTimeInterval)
+        let remaining = max(0, state.remainingWhenNotRunning)
+        return remaining / total
     }
 }
 

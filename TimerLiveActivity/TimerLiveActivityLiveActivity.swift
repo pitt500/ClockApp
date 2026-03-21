@@ -30,20 +30,16 @@ struct TimerLiveActivityConfiguration: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
-                    TimelineView(.animation) { timeline in
-                        VStack(spacing: 6) {
-                            Text("Subscribe to @swiftandtips!")
-                            Text(formattedRemainingTime(for: context.state, at: timeline.date))
-                        }
+                    #warning("Fix this")
+                    VStack(spacing: 6) {
+                        Text("Subscribe to @swiftandtips!")
+                        remainingTimeView(for: context.state)
                     }
                 }
             } compactLeading: {
                 MinimalTimerLiveActivityView(state: context.state)
             } compactTrailing: {
-                TimelineView(.animation) { timeline in
-                    Text(formattedCompactTrailingTime(for: context.state, at: timeline.date))
-                        .monospacedDigit()
-                }
+                compactTrailingRemainingTimeView(for: context.state)
             } minimal: {
                 MinimalTimerLiveActivityView(state: context.state)
             }
@@ -55,35 +51,69 @@ struct TimerLiveActivityConfiguration: Widget {
         state.status == .paused
     }
 
-    private func snapshot(for state: TimerAttributes.ContentState) -> TimerProgressSnapshot {
-        TimerProgressSnapshot(
-            totalTimeInterval: state.totalTimeInterval,
-            endDate: state.endDate,
-            remainingWhenNotRunning: state.remainingWhenNotRunning
-        )
-    }
-
-#warning("Fix Time format")
-    private func formattedRemainingTime(for state: TimerAttributes.ContentState, at date: Date) -> String {
-        let seconds = max(0, Int(snapshot(for: state).remainingInterval(at: date)))
-
-        if seconds < 60 {
-            return "\(seconds) seconds remaining"
-        } else if seconds < 3600 {
-            let minutes = seconds / 60
-            let remainingSeconds = seconds % 60
-            return "\(minutes):" + String(format: "%02d", remainingSeconds) + " remaining"
+    @ViewBuilder
+    private func remainingTimeView(for state: TimerAttributes.ContentState) -> some View {
+        if let timerInterval = timerInterval(for: state) {
+            Text(
+                timerInterval: timerInterval,
+                pauseTime: nil,
+                countsDown: true,
+                showsHours: showsHours(for: state)
+            )
         } else {
-            let hours = seconds / 3600
-            let minutes = (seconds % 3600) / 60
-            let remainingSeconds = seconds % 60
-            return "\(hours):" + String(format: "%02d:%02d", minutes, remainingSeconds) + " remaining"
+            Text(formattedPausedTime(for: state))
         }
     }
 
-    #warning("Fix Time format")
-    private func formattedCompactTrailingTime(for state: TimerAttributes.ContentState, at date: Date) -> String {
-        let seconds = max(0, Int(snapshot(for: state).remainingInterval(at: date)))
+    @ViewBuilder
+    private func compactTrailingRemainingTimeView(
+        for state: TimerAttributes.ContentState
+    ) -> some View {
+        let placeholder = placeholderFormat(for: state)
+
+        if let timerInterval = timerInterval(for: state) {
+            Text(placeholder)
+                .hidden()
+                .overlay(alignment: .leading) {
+                    Text(
+                        timerInterval: timerInterval,
+                        pauseTime: nil,
+                        countsDown: true,
+                        showsHours: showsHours(for: state)
+                    )
+                    .monospacedDigit()
+                    .lineLimit(1)
+                }
+        } else {
+            Text(placeholder)
+                .hidden()
+                .overlay(alignment: .leading) {
+                    Text(formattedPausedTime(for: state))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                }
+        }
+    }
+
+    #warning("Is it necessary to call showHours again?")
+    private func placeholderFormat(for state: TimerAttributes.ContentState) -> String {
+        showsHours(for: state) ? "00:00:00" : "00:00"
+    }
+
+    private func timerInterval(for state: TimerAttributes.ContentState) -> ClosedRange<Date>? {
+        guard state.status == .running, let endDate = state.endDate else { return nil }
+        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
+        return startDate...endDate
+    }
+
+    private func showsHours(for state: TimerAttributes.ContentState) -> Bool {
+        let seconds = Int(max(0, state.totalTimeInterval))
+        return seconds >= 3600
+    }
+
+    #warning("Fix this format")
+    private func formattedPausedTime(for state: TimerAttributes.ContentState) -> String {
+        let seconds = max(0, Int(state.remainingWhenNotRunning))
 
         if seconds < 60 {
             return "\(seconds)"
@@ -110,8 +140,8 @@ extension TimerAttributes.ContentState {
     fileprivate static var _30secondsRemaining: TimerAttributes.ContentState {
         TimerAttributes.ContentState(
             status: .running,
-            totalTimeInterval: 30.5,
-            endDate: Date.now.addingTimeInterval(25),
+            totalTimeInterval: 30000.5,
+            endDate: Date.now.addingTimeInterval(25000),
             remainingWhenNotRunning: 0,
             label: "Demo"
         )

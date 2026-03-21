@@ -12,19 +12,20 @@ import WidgetKit
 struct LockScreenTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
     
+    #warning("Fix this view later")
     var body: some View {
-        let provider = TimerLiveActivityProgressProvider(state: state)
-
         VStack(spacing: 8) {
-            if let endDate = state.endDate {
+            if let timerInterval {
                 Text(
-                    timerInterval: Date.now...endDate,
-                    countsDown: true
+                    timerInterval: timerInterval,
+                    pauseTime: nil,
+                    countsDown: true,
+                    showsHours: showsHours
                 )
                 .font(.system(size: 34, weight: .light, design: .rounded))
                 .monospacedDigit()
             } else {
-                Text(formattedRemainingTime(using: provider.snapshot, at: .now))
+                Text(formattedRemainingTime)
                     .font(.system(size: 34, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
@@ -33,9 +34,21 @@ struct LockScreenTimerLiveActivityView: View {
         .activitySystemActionForegroundColor(Color.black)
     }
 
-#warning("Fix time format")
-    private func formattedRemainingTime(using snapshot: TimerProgressSnapshot, at date: Date) -> String {
-        let seconds = max(0, Int(snapshot.remainingInterval(at: date)))
+    #warning("Code duplicated")
+    private var timerInterval: ClosedRange<Date>? {
+        guard state.status == .running, let endDate = state.endDate else { return nil }
+        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
+        return startDate...endDate
+    }
+
+    private var showsHours: Bool {
+        let seconds = Int(max(0, state.totalTimeInterval))
+        return seconds >= 3600
+    }
+
+    #warning("Fix format")
+    private var formattedRemainingTime: String {
+        let seconds = max(0, Int(state.remainingWhenNotRunning))
 
         if seconds < 60 {
             return "\(seconds)"
