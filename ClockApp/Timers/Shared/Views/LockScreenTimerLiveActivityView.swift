@@ -12,7 +12,6 @@ import WidgetKit
 struct LockScreenTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
     
-    #warning("Fix this view later")
     var body: some View {
         VStack(spacing: 8) {
             if let timerInterval {
@@ -46,21 +45,7 @@ struct LockScreenTimerLiveActivityView: View {
         return seconds >= 3600
     }
 
-    #warning("Fix format")
     private var formattedRemainingTime: String {
-        let seconds = max(0, state.displayedRemainingTime.components.seconds)
-
-        if seconds < 60 {
-            return "\(seconds)"
-        } else if seconds < 3600 {
-            let minutes = seconds / 60
-            let remainingSeconds = seconds % 60
-            return "\(minutes):" + String(format: "%02d", remainingSeconds)
-        } else {
-            let hours = seconds / 3600
-            let minutes = (seconds % 3600) / 60
-            let remainingSeconds = seconds % 60
-            return "\(hours):" + String(format: "%02d:%02d", minutes, remainingSeconds)
-        }
+        LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
     }
 }

@@ -69,6 +69,7 @@
 				Timers/Presentation/Views/Styles/ClockTimerStyle.swift,
 				Timers/Presentation/Views/Styles/TimerProgressRingStyle.swift,
 				Timers/Shared/LiveActivities/TimerAttributes.swift,
+				Timers/Shared/Views/Helpers/LiveActivityTimerFormatting.swift,
 				Timers/Shared/Views/LockScreenTimerLiveActivityView.swift,
 				Timers/Shared/Views/MinimalTimerLiveActivityView.swift,
 				Timers/Shared/Views/TimerControlButton.swift,

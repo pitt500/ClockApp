@@ -111,30 +111,8 @@ struct TimerLiveActivityConfiguration: Widget {
         return seconds >= 3600
     }
 
-    #warning("Fix this format")
     private func formattedPausedTime(for state: TimerAttributes.ContentState) -> String {
-        let seconds = max(0, state.displayedRemainingTime.components.seconds)
-
-        if seconds < 3600 {
-            let minutes = seconds / 60
-            let remainingSeconds = seconds % 60
-
-            return [minutes, remainingSeconds]
-                .map { value in
-                    value.formatted(.number.precision(.integerLength(2)))
-                }
-                .joined(separator: ":")
-        } else {
-            let hours = seconds / 3600
-            let minutes = (seconds % 3600) / 60
-            let remainingSeconds = seconds % 60
-
-            return [hours, minutes, remainingSeconds]
-                .map { value in
-                    value.formatted(.number.precision(.integerLength(2)))
-                }
-                .joined(separator: ":")
-        }
+        LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
     }
 }
 
