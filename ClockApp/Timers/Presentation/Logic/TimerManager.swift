@@ -34,6 +34,7 @@ final class TimerManager {
     private(set) var status: Status = .idle
     private(set) var totalTimeInSeconds: Duration = .seconds(0)
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
+    private(set) var liveActivityRelevanceScore: Double = 0
     
     private var endDate: Date?
     private var finishGrace: TimeInterval = 0.50
@@ -58,10 +59,10 @@ final class TimerManager {
             return AnyTimerCancellable { t.invalidate() }
         }
     ) {
+        self.label = label
         self.activityHandler = activityHandler
         self.now = now
         self.makeRepeatingTimer = makeRepeatingTimer
-        self.label = label
     }
 
     /// Configures this manager as an idle "preset" (used for Recents).
@@ -95,7 +96,7 @@ final class TimerManager {
 
         enterRunning(
             interval: remainingTimeWhenNotRunning,
-            activity: .start(title: label)
+            activity: .start(title: liveActivityTitle)
         )
     }
 
@@ -141,11 +142,23 @@ final class TimerManager {
         return max(0, remainingTimeWhenNotRunning)
     }
 
+    func setLiveActivityRelevanceScore(_ score: Double) {
+        guard liveActivityRelevanceScore != score else { return }
+        liveActivityRelevanceScore = score
+
+        guard status != .idle else { return }
+        activityHandler?.update(for: self)
+    }
+
     // MARK: - Private
 
     private enum ActivityTransition {
         case start(title: String)
         case update
+    }
+
+    private var liveActivityTitle: String {
+        label.isEmpty ? "Timer" : label
     }
 
     private func configure(totalTime: Duration) {

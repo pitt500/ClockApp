@@ -37,14 +37,17 @@ final class TimersStore {
     // MARK: - Persistence
 
     private let persistence: TimersPersistence
-    private let activityHandler: TimerActivityHandling
+    private let liveActivityCoordinator: TimerLiveActivityCoordinating
+    private let makeActivityHandler: () -> TimerActivityHandling
 
     init(
         persistence: TimersPersistence = FileTimersPersistence(),
-        activityHandler: TimerActivityHandling = TimerActivityController()
+        liveActivityCoordinator: TimerLiveActivityCoordinating = TimerLiveActivityCoordinator(),
+        makeActivityHandler: @escaping () -> TimerActivityHandling = { TimerActivityController() }
     ) {
         self.persistence = persistence
-        self.activityHandler = activityHandler
+        self.liveActivityCoordinator = liveActivityCoordinator
+        self.makeActivityHandler = makeActivityHandler
         TimerLiveActivityCommandCenter.shared.handler = self
     }
 
@@ -106,6 +109,8 @@ final class TimersStore {
                 // Active list shouldn't contain idle items, but don't crash.
                 break
             }
+
+            reconcileLiveActivities()
             return
         }
 
@@ -121,6 +126,7 @@ final class TimersStore {
         activeTimers.removeAll { $0.id == item.id }
 
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
+        reconcileLiveActivities()
     }
 
     // MARK: - Finish Handling
@@ -132,6 +138,8 @@ final class TimersStore {
         activeTimers.removeAll { $0.id == item.id }
 
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
+
+        reconcileLiveActivities()
     }
 
     // MARK: - Helpers
@@ -160,7 +168,10 @@ final class TimersStore {
         TimerItem(
             label: label,
             configuredDuration: configuredDuration,
-            manager: TimerManager(label: label, activityHandler: activityHandler)
+            manager: TimerManager(
+                label: label,
+                activityHandler: makeActivityHandler()
+            )
         )
     }
 
@@ -175,6 +186,11 @@ final class TimersStore {
 
         // Always start from the configured duration.
         item.manager.setTimer(totalTime: item.configuredDuration)
+        reconcileLiveActivities()
+    }
+
+    private func reconcileLiveActivities() {
+        liveActivityCoordinator.reconcile(activeTimers: activeTimers, at: .now)
     }
 
     private func durationKey(_ duration: Duration) -> Int {
@@ -193,7 +209,10 @@ extension TimersStore {
         // This is required because there's a SwiftUI Glitch when you delete elements in a list and you have a header like the one I have in this app.
         //If you are reading this, forgive me and feel free to improve this if you have a better idea.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.activeTimers.remove(atOffsets: offsets)
+            guard let self else { return }
+
+            self.activeTimers.remove(atOffsets: offsets)
+            reconcileLiveActivities()
         }
     }
 
@@ -214,12 +233,12 @@ extension TimersStore {
 
 extension TimersStore: TimerLiveActivityCommandHandling {
     func toggleCurrentLiveActivityTimer() {
-        guard let current = activeTimers.first else { return }
+        guard let current = liveActivityCoordinator.highestPriorityTimer(from: activeTimers, at: .now) else { return }
         toggle(current)
     }
 
     func cancelCurrentLiveActivityTimer() {
-        guard let current = activeTimers.first else { return }
+        guard let current = liveActivityCoordinator.highestPriorityTimer(from: activeTimers, at: .now) else { return }
         cancel(current)
     }
 }

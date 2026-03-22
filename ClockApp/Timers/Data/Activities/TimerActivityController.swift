@@ -11,7 +11,6 @@ import Foundation
 
 final class TimerActivityController: TimerActivityHandling {
     private var activity: Activity<TimerAttributes>?
-    private var label: String = ""
 
     func start(for manager: TimerManager, title: String) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
@@ -21,11 +20,16 @@ final class TimerActivityController: TimerActivityHandling {
 
         let attributes = TimerAttributes(title: title.isEmpty ? "Timer" : title)
         let state = makeState(from: manager)
+        let content = ActivityContent(
+            state: state,
+            staleDate: nil,
+            relevanceScore: manager.liveActivityRelevanceScore
+        )
 
         do {
             activity = try Activity.request(
                 attributes: attributes,
-                content: .init(state: state, staleDate: nil),
+                content: content,
                 pushType: nil
             )
         } catch {
@@ -35,10 +39,16 @@ final class TimerActivityController: TimerActivityHandling {
 
     func update(for manager: TimerManager) {
         guard let activity else { return }
+
         let state = makeState(from: manager)
+        let content = ActivityContent(
+            state: state,
+            staleDate: nil,
+            relevanceScore: manager.liveActivityRelevanceScore
+        )
 
         Task {
-            await activity.update(.init(state: state, staleDate: nil))
+            await activity.update(content)
         }
     }
 
