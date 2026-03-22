@@ -1,6 +1,6 @@
 //
-//  TimerLiveActivityLiveActivity.swift
-//  TimerLiveActivity
+//  TimerLiveActivityConfiguration.swift
+//  TimerLiveActivityConfiguration
 //
 //  Created by Pedro Rojas on 03/03/26.
 //
@@ -40,9 +40,11 @@ struct TimerLiveActivityConfiguration: Widget {
 
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.attributes.title)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.body.scaled(by: 1.2))
                         .foregroundStyle(.orange)
                         .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .frame(maxHeight: .infinity, alignment: .center)
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
@@ -84,18 +86,20 @@ struct TimerLiveActivityConfiguration: Widget {
     ) -> some View {
         if state.runningTimeInterval != nil {
             remainingTimeView(for: state)
-                .font(.body.scaled(by: 1.5))
+                .font(.body.scaled(by: 3.0))
                 .monospacedDigit()
-                .foregroundStyle(.orange)
+                .minimumScaleFactor(0.4)
                 .lineLimit(1)
+                .foregroundStyle(.orange)
                 .multilineTextAlignment(.trailing)
                 .frame(maxHeight: .infinity, alignment: .center)
         } else {
             Text(formattedPausedTime(for: state))
-                .font(.body.scaled(by: 1.5))
+                .font(.body.scaled(by: 3.0))
                 .monospacedDigit()
-                .foregroundStyle(.orange)
+                .minimumScaleFactor(0.4)
                 .lineLimit(1)
+                .foregroundStyle(.orange)
                 .multilineTextAlignment(.trailing)
                 .frame(maxHeight: .infinity, alignment: .center)
         }
@@ -158,8 +162,8 @@ extension TimerAttributes.ContentState {
     fileprivate static var _30secondsRemaining: TimerAttributes.ContentState {
         TimerAttributes.ContentState(
             status: .running,
-            totalTimeInterval: 30000.5,
-            endDate: Date.now.addingTimeInterval(25000),
+            totalTimeInterval: 100000.5,
+            endDate: Date.now.addingTimeInterval(95000),
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(25000),
         )
