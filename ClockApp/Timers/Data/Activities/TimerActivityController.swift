@@ -19,7 +19,7 @@ final class TimerActivityController: TimerActivityHandling {
             return
         }
 
-        let attributes = TimerAttributes(title: title)
+        let attributes = TimerAttributes(title: title.isEmpty ? "Timer" : title)
         let state = makeState(from: manager)
 
         do {
