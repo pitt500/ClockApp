@@ -81,7 +81,7 @@ actor FileTimersPersistence: TimersPersistence {
 
     private func makeRecentTimerItem(duration: Duration, label: String) async -> TimerItem {
         let manager = await MainActor.run { () -> TimerManager in
-            let manager = TimerManager()
+            let manager = TimerManager(label: label)
             manager.setPreset(totalTime: duration)
             return manager
         }

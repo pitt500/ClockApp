@@ -179,6 +179,7 @@ struct TimerManagerTests {
         let timer = ManualRepeatingTimer()
 
         let sut = TimerManager(
+            label: "Timer Demo",
             activityHandler: activity,
             now: { clock.now },
             makeRepeatingTimer: { _, handler in

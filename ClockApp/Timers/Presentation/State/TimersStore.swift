@@ -142,7 +142,7 @@ final class TimersStore {
             return
         }
 
-        let manager = TimerManager()
+        let manager = TimerManager(label: label)
         manager.setPreset(totalTime: duration)
 
         let preset = TimerItem(
@@ -160,7 +160,7 @@ final class TimersStore {
         TimerItem(
             label: label,
             configuredDuration: configuredDuration,
-            manager: TimerManager(activityHandler: activityHandler)
+            manager: TimerManager(label: label, activityHandler: activityHandler)
         )
     }
 

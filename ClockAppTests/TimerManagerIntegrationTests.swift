@@ -19,7 +19,7 @@ struct TimerManagerIntegrationTests {
 
     @Test
     func `Timer ticks on the main RunLoop and label changes over time`() async {
-        let manager = TimerManager()
+        let manager = TimerManager(label: "Test")
         manager.setTimer(totalTime: .seconds(3))
 
         #expect(manager.status == .running)
@@ -34,7 +34,7 @@ struct TimerManagerIntegrationTests {
 
     @Test
     func `Timer finishes naturally and fires onDidFinish using real time`() async {
-        let manager = TimerManager()
+        let manager = TimerManager(label: "Test")
 
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             manager.onDidFinish = {
@@ -50,7 +50,7 @@ struct TimerManagerIntegrationTests {
     
     @Test
     func `Cancelling a running timer stops ticking and does not fire finish`() async {
-        let manager = TimerManager()
+        let manager = TimerManager(label: "Test")
 
         var didFinish = false
         manager.onDidFinish = {

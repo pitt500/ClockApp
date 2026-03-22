@@ -40,6 +40,7 @@ final class TimerManager {
     private var remainingTimeWhenNotRunning: TimeInterval = 0
     private var timer: TimerCancellable?
     private let activityHandler: TimerActivityHandling?
+    private let label: String
     
     // Dependencies (injectable for fast, deterministic tests)
     private let now: () -> Date
@@ -47,6 +48,7 @@ final class TimerManager {
 
 
     init(
+        label: String,
         activityHandler: TimerActivityHandling? = nil,
         now: @escaping () -> Date = { Date.now },
         makeRepeatingTimer: @escaping (_ interval: TimeInterval, _ handler: @escaping () -> Void) -> TimerCancellable = { interval, handler in
@@ -59,6 +61,7 @@ final class TimerManager {
         self.activityHandler = activityHandler
         self.now = now
         self.makeRepeatingTimer = makeRepeatingTimer
+        self.label = label
     }
 
     /// Configures this manager as an idle "preset" (used for Recents).
@@ -92,7 +95,7 @@ final class TimerManager {
 
         enterRunning(
             interval: remainingTimeWhenNotRunning,
-            activity: .start(title: "Timer Demo")
+            activity: .start(title: label)
         )
     }
 

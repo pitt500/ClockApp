@@ -39,7 +39,7 @@ struct TimerLiveActivityConfiguration: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.center) {
-                    Text("Timer")
+                    Text(context.attributes.title)
                         .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(.orange)
                         .lineLimit(1)
@@ -162,7 +162,6 @@ extension TimerAttributes.ContentState {
             endDate: Date.now.addingTimeInterval(25000),
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(25000),
-            label: "Demo"
         )
     }
 
@@ -173,7 +172,6 @@ extension TimerAttributes.ContentState {
             endDate: Date.now.addingTimeInterval(70),
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(70),
-            label: "Demo"
         )
     }
 }
