@@ -17,8 +17,9 @@ struct TimerLiveActivityConfiguration: Widget {
 
         } dynamicIsland: { context in
             DynamicIsland {
+                
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack {
+                    HStack(spacing: 12) {
                         Button(intent: PauseOrResumeTimerIntent()) {
                             TimerControlButton(
                                 systemImage: isPaused(context.state) ? "play.fill" : "pause.fill",
@@ -37,13 +38,17 @@ struct TimerLiveActivityConfiguration: Widget {
                     }
                 }
 
-                DynamicIslandExpandedRegion(.bottom) {
-                    #warning("Fix this")
-                    VStack(spacing: 6) {
-                        Text("Subscribe to @swiftandtips!")
-                        remainingTimeView(for: context.state)
-                    }
+                DynamicIslandExpandedRegion(.center) {
+                    Text("Timer")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(.orange)
+                        .lineLimit(1)
                 }
+
+                DynamicIslandExpandedRegion(.trailing) {
+                    expandedTrailingRemainingTimeView(for: context.state)
+                }
+
             } compactLeading: {
                 MinimalTimerLiveActivityView(state: context.state)
             } compactTrailing: {
@@ -51,7 +56,7 @@ struct TimerLiveActivityConfiguration: Widget {
             } minimal: {
                 MinimalTimerLiveActivityView(state: context.state)
             }
-            .keylineTint(.red)
+            .keylineTint(.orange)
         }
     }
 
@@ -71,6 +76,18 @@ struct TimerLiveActivityConfiguration: Widget {
         } else {
             Text(formattedPausedTime(for: state))
         }
+    }
+
+    private func expandedTrailingRemainingTimeView(
+        for state: TimerAttributes.ContentState
+    ) -> some View {
+        remainingTimeView(for: state)
+            .font(.body.scaled(by: 1.5))
+            .monospacedDigit()
+            .foregroundStyle(.orange)
+            .lineLimit(1)
+            .multilineTextAlignment(.trailing)
+            .frame(maxHeight: .infinity, alignment: .center)
     }
 
     @ViewBuilder
@@ -104,7 +121,7 @@ struct TimerLiveActivityConfiguration: Widget {
     }
 
     /*
-     This placeholder is required because Text(timerInterval:) expands to the maximum possible width of its content in the Dynamic Island, causing layout issues. By providing a fixed-width placeholder (e.g. “00:00” or “00:00:00”) and overlaying the real timer on top, we ensure the layout remains stable and only occupies the necessary space.
+     This placeholder is required because Text(timerInterval:) expands to the maximum possible width of its content in the Dynamic Island, causing layout issues. By providing a fixed-width placeholder (e.g. "00:00" or "00:00:00") and overlaying the real timer on top, we ensure the layout remains stable and only occupies the necessary space.
     */
     private func placeholderFormat(for state: TimerAttributes.ContentState) -> String {
         showsHours(for: state) ? "00:00:00" : "00:00"
