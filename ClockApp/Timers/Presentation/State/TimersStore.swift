@@ -45,6 +45,13 @@ final class TimersStore {
     ) {
         self.persistence = persistence
         self.activityHandler = activityHandler
+        TimerLiveActivityCommandCenter.shared.handler = self
+    }
+
+    deinit {
+        if TimerLiveActivityCommandCenter.shared.handler === self {
+            TimerLiveActivityCommandCenter.shared.handler = nil
+        }
     }
 
     // MARK: - Persistence API
@@ -202,5 +209,17 @@ extension TimersStore {
     func deleteRecentTimers(at offsets: IndexSet) {
         recentTimers.remove(atOffsets: offsets)
         persistRecents()
+    }
+}
+
+extension TimersStore: TimerLiveActivityCommandHandling {
+    func toggleCurrentLiveActivityTimer() {
+        guard let current = activeTimers.first else { return }
+        toggle(current)
+    }
+
+    func cancelCurrentLiveActivityTimer() {
+        guard let current = activeTimers.first else { return }
+        cancel(current)
     }
 }

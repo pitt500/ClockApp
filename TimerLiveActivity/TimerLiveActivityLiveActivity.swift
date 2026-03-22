@@ -6,6 +6,7 @@
 //
 
 import ActivityKit
+import AppIntents
 import WidgetKit
 import SwiftUI
 
@@ -18,14 +19,21 @@ struct TimerLiveActivityConfiguration: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack {
-                        TimerControlButton(
-                            systemImage: isPaused(context.state) ? "play.fill" : "pause.fill",
-                            style: .primary
-                        )
-                        TimerControlButton(
-                            systemImage: "xmark",
-                            style: .secondary
-                        )
+                        Button(intent: PauseOrResumeTimerIntent()) {
+                            TimerControlButton(
+                                systemImage: isPaused(context.state) ? "play.fill" : "pause.fill",
+                                style: .primary
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Button(intent: CancelTimerIntent()) {
+                            TimerControlButton(
+                                systemImage: "xmark",
+                                style: .secondary
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -53,7 +61,7 @@ struct TimerLiveActivityConfiguration: Widget {
 
     @ViewBuilder
     private func remainingTimeView(for state: TimerAttributes.ContentState) -> some View {
-        if let timerInterval = timerInterval(for: state) {
+        if let timerInterval = state.runningTimeInterval {
             Text(
                 timerInterval: timerInterval,
                 pauseTime: nil,
@@ -71,7 +79,7 @@ struct TimerLiveActivityConfiguration: Widget {
     ) -> some View {
         let placeholder = placeholderFormat(for: state)
 
-        if let timerInterval = timerInterval(for: state) {
+        if let timerInterval = state.runningTimeInterval {
             Text(placeholder)
                 .hidden()
                 .overlay(alignment: .leading) {
@@ -100,12 +108,6 @@ struct TimerLiveActivityConfiguration: Widget {
     */
     private func placeholderFormat(for state: TimerAttributes.ContentState) -> String {
         showsHours(for: state) ? "00:00:00" : "00:00"
-    }
-
-    private func timerInterval(for state: TimerAttributes.ContentState) -> ClosedRange<Date>? {
-        guard state.status == .running, let endDate = state.endDate else { return nil }
-        let startDate = endDate.addingTimeInterval(-state.totalTimeInterval)
-        return startDate...endDate
     }
 
     private func showsHours(for state: TimerAttributes.ContentState) -> Bool {
