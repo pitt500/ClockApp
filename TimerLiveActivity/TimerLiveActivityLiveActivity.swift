@@ -78,16 +78,27 @@ struct TimerLiveActivityConfiguration: Widget {
         }
     }
 
+    @ViewBuilder
     private func expandedTrailingRemainingTimeView(
         for state: TimerAttributes.ContentState
     ) -> some View {
-        remainingTimeView(for: state)
-            .font(.body.scaled(by: 1.5))
-            .monospacedDigit()
-            .foregroundStyle(.orange)
-            .lineLimit(1)
-            .multilineTextAlignment(.trailing)
-            .frame(maxHeight: .infinity, alignment: .center)
+        if state.runningTimeInterval != nil {
+            remainingTimeView(for: state)
+                .font(.body.scaled(by: 1.5))
+                .monospacedDigit()
+                .foregroundStyle(.orange)
+                .lineLimit(1)
+                .multilineTextAlignment(.trailing)
+                .frame(maxHeight: .infinity, alignment: .center)
+        } else {
+            Text(formattedPausedTime(for: state))
+                .font(.body.scaled(by: 1.5))
+                .monospacedDigit()
+                .foregroundStyle(.orange)
+                .lineLimit(1)
+                .multilineTextAlignment(.trailing)
+                .frame(maxHeight: .infinity, alignment: .center)
+        }
     }
 
     @ViewBuilder

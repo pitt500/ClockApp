@@ -5,14 +5,6 @@
 //  Created by Pedro Rojas on 21/03/26.
 //
 
-
-//
-//  LiveActivityTimerFormatting.swift
-//  ClockApp
-//
-//  Created by Pedro Rojas on 21/03/26.
-//
-
 import Foundation
 
 enum LiveActivityTimerFormatting {
@@ -23,21 +15,16 @@ enum LiveActivityTimerFormatting {
             let minutes = seconds / 60
             let remainingSeconds = seconds % 60
 
-            return [minutes, remainingSeconds]
-                .map { value in
-                    value.formatted(.number.precision(.integerLength(2)))
-                }
-                .joined(separator: ":")
+            return minutes.formatted() + ":"
+                + remainingSeconds.formatted(.number.precision(.integerLength(2)))
         } else {
             let hours = seconds / 3600
             let minutes = (seconds % 3600) / 60
             let remainingSeconds = seconds % 60
 
-            return [hours, minutes, remainingSeconds]
-                .map { value in
-                    value.formatted(.number.precision(.integerLength(2)))
-                }
-                .joined(separator: ":")
+            return hours.formatted() + ":"
+                + minutes.formatted(.number.precision(.integerLength(2))) + ":"
+                + remainingSeconds.formatted(.number.precision(.integerLength(2)))
         }
     }
 }
