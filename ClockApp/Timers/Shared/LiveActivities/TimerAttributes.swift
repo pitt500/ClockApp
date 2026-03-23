@@ -9,6 +9,11 @@
 import ActivityKit
 import Foundation
 
+enum TimerPresentationMode: String, Codable, Hashable {
+    case normal
+    case alerting
+}
+
 struct TimerAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         var status: TimerStatus
@@ -16,6 +21,7 @@ struct TimerAttributes: ActivityAttributes {
         var endDate: Date?
         var remainingWhenNotRunning: TimeInterval
         var displayedRemainingTime: Duration
+        var presentationMode: TimerPresentationMode
     }
 
     var title: String

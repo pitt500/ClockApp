@@ -35,7 +35,9 @@ final class TimerManager {
     private(set) var totalTimeInSeconds: Duration = .seconds(0)
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
     private(set) var liveActivityRelevanceScore: Double = 0
-    
+    private(set) var presentationMode: TimerPresentationMode = .normal
+    private(set) var alertStartedAt: Date?
+
     private var endDate: Date?
     private var finishGrace: TimeInterval = 0.50
     private var remainingTimeWhenNotRunning: TimeInterval = 0
@@ -72,6 +74,8 @@ final class TimerManager {
     func setPreset(totalTime: Duration) {
         stopInternal()
         configure(totalTime: totalTime)
+        presentationMode = .normal
+        alertStartedAt = nil
     }
 
     // MARK: - Public API
@@ -107,6 +111,8 @@ final class TimerManager {
         remainingTimeWhenNotRunning = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
+        presentationMode = .normal
+        alertStartedAt = nil
         self.endDate = nil
 
         stopUnderlyingTimer()
@@ -142,11 +148,12 @@ final class TimerManager {
         return max(0, remainingTimeWhenNotRunning)
     }
 
+    #warning("Is this relevant to manager?")
     func setLiveActivityRelevanceScore(_ score: Double) {
         guard liveActivityRelevanceScore != score else { return }
         liveActivityRelevanceScore = score
 
-        guard status != .idle else { return }
+        guard status != .idle || presentationMode == .alerting else { return }
         activityHandler?.update(for: self)
     }
 
@@ -165,12 +172,15 @@ final class TimerManager {
         totalTimeInSeconds = totalTime
         remainingTimeInSeconds = totalTime
         remainingTimeWhenNotRunning = totalTime.toTimeInterval() + finishGrace
+        presentationMode = .normal
+        alertStartedAt = nil
     }
 
 
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
-        
+        presentationMode = .normal
+        alertStartedAt = nil
         endDate = now().addingTimeInterval(interval)
 
         switch activity {
@@ -206,17 +216,26 @@ final class TimerManager {
         }
     }
 
+    #warning("Fix this")
     private func finishNaturally() {
-        stopInternal()
+        stopUnderlyingTimer()
+        endDate = nil
+        status = .paused
         remainingTimeInSeconds = .seconds(0)
         remainingTimeWhenNotRunning = 0
+        presentationMode = .alerting
+        alertStartedAt = now()
+        activityHandler?.update(for: self)
         onDidFinish?()
     }
 
+    #warning("Fix this")
     private func stopInternal() {
         status = .idle
         stopUnderlyingTimer()
         endDate = nil
+        presentationMode = .normal
+        alertStartedAt = nil
         activityHandler?.end()
     }
 

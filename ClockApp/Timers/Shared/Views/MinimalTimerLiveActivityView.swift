@@ -47,7 +47,8 @@ struct MinimalTimerLiveActivityView: View {
             totalTimeInterval: 30.5,
             endDate: Date.now.addingTimeInterval(25),
             remainingWhenNotRunning: 0,
-            displayedRemainingTime: .seconds(25)
+            displayedRemainingTime: .seconds(25),
+            presentationMode: .normal
         )
     )
     .frame(width: 100, height: 100)

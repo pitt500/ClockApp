@@ -49,11 +49,17 @@ final class TimersStore {
         self.liveActivityCoordinator = liveActivityCoordinator
         self.makeActivityHandler = makeActivityHandler
         TimerLiveActivityCommandCenter.shared.handler = self
+        TimerAlertCommandCenter.shared.handler = self
     }
 
+    #warning("Is this necessary?")
     deinit {
         if TimerLiveActivityCommandCenter.shared.handler === self {
             TimerLiveActivityCommandCenter.shared.handler = nil
+        }
+
+        if TimerAlertCommandCenter.shared.handler === self {
+            TimerAlertCommandCenter.shared.handler = nil
         }
     }
 
@@ -134,9 +140,6 @@ final class TimersStore {
     private func handleTimerDidFinish(_ manager: TimerManager) {
         guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
 
-        // Remove the finished active instance.
-        activeTimers.removeAll { $0.id == item.id }
-
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
 
         reconcileLiveActivities()
@@ -193,6 +196,12 @@ final class TimersStore {
         liveActivityCoordinator.reconcile(activeTimers: activeTimers, at: .now)
     }
 
+    private func dismissAlert(_ item: TimerItem) {
+        item.manager.cancel()
+        activeTimers.removeAll { $0.id == item.id }
+        reconcileLiveActivities()
+    }
+
     private func durationKey(_ duration: Duration) -> Int {
         max(0, Int(duration.components.seconds))
     }
@@ -240,5 +249,12 @@ extension TimersStore: TimerLiveActivityCommandHandling {
     func cancelCurrentLiveActivityTimer() {
         guard let current = liveActivityCoordinator.highestPriorityTimer(from: activeTimers, at: .now) else { return }
         cancel(current)
+    }
+}
+
+extension TimersStore: TimerAlertCommandHandling {
+    func dismissCurrentTimerAlert() {
+        guard let current = liveActivityCoordinator.highestPriorityAlert(from: activeTimers, at: .now) else { return }
+        dismissAlert(current)
     }
 }

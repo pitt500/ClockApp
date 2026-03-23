@@ -17,46 +17,78 @@ struct TimerLiveActivityConfiguration: Widget {
 
         } dynamicIsland: { context in
             DynamicIsland {
-                
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: 12) {
-                        Button(intent: PauseOrResumeTimerIntent()) {
-                            TimerControlButton(
-                                systemImage: isPaused(context.state) ? "play.fill" : "pause.fill",
-                                style: .primary
-                            )
-                        }
-                        .buttonStyle(.plain)
+                    #warning("Create subviews to refactor this code.")
+                    if isAlerting(context.state) {
+                        Text(context.attributes.title)
+                            .font(.body.scaled(by: 1.8).bold())
+                            .foregroundStyle(.orange)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    } else {
+                        HStack(spacing: 12) {
+                            Button(intent: PauseOrResumeTimerIntent()) {
+                                TimerControlButton(
+                                    systemImage: isPaused(context.state) ? "play.fill" : "pause.fill",
+                                    style: .primary
+                                )
+                            }
+                            .buttonStyle(.plain)
 
-                        Button(intent: CancelTimerIntent()) {
+                            Button(intent: CancelTimerIntent()) {
+                                TimerControlButton(
+                                    systemImage: "xmark",
+                                    style: .secondary
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                DynamicIslandExpandedRegion(.center) {
+                    #warning("avoid system font size")
+                    if !isAlerting(context.state) {
+                        Text(context.attributes.title)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(.orange)
+                            .lineLimit(1)
+                    }
+                }
+
+                DynamicIslandExpandedRegion(.trailing) {
+                    if isAlerting(context.state) {
+                        Button(intent: DismissTimerAlertIntent()) {
                             TimerControlButton(
                                 systemImage: "xmark",
                                 style: .secondary
                             )
                         }
                         .buttonStyle(.plain)
+                    } else {
+                        expandedTrailingRemainingTimeView(for: context.state)
                     }
                 }
-
-                DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.title)
-                        .font(.body.scaled(by: 1.2))
-                        .foregroundStyle(.orange)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .frame(maxHeight: .infinity, alignment: .center)
-                }
-
-                DynamicIslandExpandedRegion(.trailing) {
-                    expandedTrailingRemainingTimeView(for: context.state)
-                }
-
             } compactLeading: {
-                MinimalTimerLiveActivityView(state: context.state)
+                if isAlerting(context.state) {
+                    Image(systemName: "bell.fill")
+                        .foregroundStyle(.orange)
+                } else {
+                    MinimalTimerLiveActivityView(state: context.state)
+                }
             } compactTrailing: {
-                compactTrailingRemainingTimeView(for: context.state)
+                if isAlerting(context.state) {
+                    EmptyView()
+                } else {
+                    compactTrailingRemainingTimeView(for: context.state)
+                }
             } minimal: {
-                MinimalTimerLiveActivityView(state: context.state)
+                if isAlerting(context.state) {
+                    Image(systemName: "bell.fill")
+                        .foregroundStyle(.orange)
+                } else {
+                    MinimalTimerLiveActivityView(state: context.state)
+                }
             }
             .keylineTint(.orange)
         }
@@ -64,6 +96,10 @@ struct TimerLiveActivityConfiguration: Widget {
 
     private func isPaused(_ state: TimerAttributes.ContentState) -> Bool {
         state.status == .paused
+    }
+
+    private func isAlerting(_ state: TimerAttributes.ContentState) -> Bool {
+        state.presentationMode == .alerting
     }
 
     @ViewBuilder
@@ -166,6 +202,7 @@ extension TimerAttributes.ContentState {
             endDate: Date.now.addingTimeInterval(95000),
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(25000),
+            presentationMode: .normal
         )
     }
 
@@ -176,6 +213,7 @@ extension TimerAttributes.ContentState {
             endDate: Date.now.addingTimeInterval(70),
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(70),
+            presentationMode: .normal
         )
     }
 }

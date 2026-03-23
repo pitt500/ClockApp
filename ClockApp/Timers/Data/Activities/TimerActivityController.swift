@@ -46,9 +46,17 @@ final class TimerActivityController: TimerActivityHandling {
             staleDate: nil,
             relevanceScore: manager.liveActivityRelevanceScore
         )
+        
+        let alertConfiguration: AlertConfiguration? = if manager.presentationMode == .alerting {
+            .init(
+                title: .init(stringLiteral: activity.attributes.title),
+                body: "",
+                sound: .default
+            )
+        } else { nil }
 
         Task {
-            await activity.update(content)
+            await activity.update(content, alertConfiguration: alertConfiguration)
         }
     }
 
@@ -85,14 +93,14 @@ final class TimerActivityController: TimerActivityHandling {
         let remainingWhenNotRunning: TimeInterval = manager.status == .running
             ? 0
             : remaining
-        
 
         return .init(
             status: status,
             totalTimeInterval: manager.totalTimeInterval,
             endDate: endDate,
             remainingWhenNotRunning: remainingWhenNotRunning,
-            displayedRemainingTime: manager.displayedRemainingTime
+            displayedRemainingTime: manager.displayedRemainingTime,
+            presentationMode: manager.presentationMode
         )
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 
 protocol TimerLiveActivityCoordinating {
     func highestPriorityTimer(from activeTimers: [TimerItem], at date: Date) -> TimerItem?
+    func highestPriorityAlert(from activeTimers: [TimerItem], at date: Date) -> TimerItem?
     func reconcile(activeTimers: [TimerItem], at date: Date)
 }
 
@@ -16,24 +17,34 @@ final class TimerLiveActivityCoordinator: TimerLiveActivityCoordinating {
     private func prioritizedTimers(
         from activeTimers: [TimerItem],
         at date: Date
-    ) -> (running: [TimerItem], paused: [TimerItem]) {
+    ) -> (alerting: [TimerItem], running: [TimerItem], paused: [TimerItem]) {
+        let alertingTimers = activeTimers
+            .filter { $0.manager.presentationMode == .alerting }
+            .sorted {
+                ($0.manager.alertStartedAt ?? .distantPast) > ($1.manager.alertStartedAt ?? .distantPast)
+            }
+
         let runningTimers = activeTimers
-            .filter { $0.manager.status == .running }
+            .filter { $0.manager.presentationMode == .normal && $0.manager.status == .running }
             .sorted {
                 $0.manager.remainingInterval(at: date) < $1.manager.remainingInterval(at: date)
             }
 
         let pausedTimers = activeTimers
-            .filter { $0.manager.status == .paused }
+            .filter { $0.manager.presentationMode == .normal && $0.manager.status == .paused }
             .sorted {
                 $0.manager.remainingInterval(at: date) < $1.manager.remainingInterval(at: date)
             }
 
-        return (runningTimers, pausedTimers)
+        return (alertingTimers, runningTimers, pausedTimers)
     }
-    
+
     func highestPriorityTimer(from activeTimers: [TimerItem], at date: Date = .now) -> TimerItem? {
         let timers = prioritizedTimers(from: activeTimers, at: date)
+
+        if let firstAlert = timers.alerting.first {
+            return firstAlert
+        }
 
         if let firstRunning = timers.running.first {
             return firstRunning
@@ -41,18 +52,28 @@ final class TimerLiveActivityCoordinator: TimerLiveActivityCoordinating {
 
         return timers.paused.first
     }
-    
+
+    func highestPriorityAlert(from activeTimers: [TimerItem], at date: Date = .now) -> TimerItem? {
+        prioritizedTimers(from: activeTimers, at: date).alerting.first
+    }
+
     func reconcile(activeTimers: [TimerItem], at date: Date = .now) {
         let timers = prioritizedTimers(from: activeTimers, at: date)
 
-        if !timers.running.isEmpty {
+        applyRelevanceScores(to: timers.alerting, topScore: 1_000, decrement: 1)
+
+        if timers.running.isEmpty {
+            applyRelevanceScores(to: timers.paused, topScore: 100, decrement: 1)
+        } else {
             applyRelevanceScores(to: timers.running, topScore: 100, decrement: 1)
             applyRelevanceScores(to: timers.paused, topScore: 10, decrement: 1)
-        } else {
-            applyRelevanceScores(to: timers.paused, topScore: 100, decrement: 1)
         }
 
-        let prioritizedIDs = Set(timers.running.map(\.id) + timers.paused.map(\.id))
+        let prioritizedIDs = Set(
+            timers.alerting.map(\.id) +
+            timers.running.map(\.id) +
+            timers.paused.map(\.id)
+        )
 
         for item in activeTimers where !prioritizedIDs.contains(item.id) {
             item.manager.setLiveActivityRelevanceScore(0)
