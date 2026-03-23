@@ -290,9 +290,10 @@ struct TimerManagerTests {
         await drainTickTask()
 
         #expect(didFinish == true)
-        #expect(timerManager.status == .idle)
+        #expect(timerManager.status == .paused)
+        #expect(timerManager.presentationMode == .alerting)
         #expect(timerManager.remainingTimeInSeconds == .seconds(0))
-        #expect(activity.endCallCount >= 1)
+        #expect(activity.endCallCount == 0)
     }
 
     @Test
