@@ -72,10 +72,9 @@ final class TimerManager {
     /// This sets the configured duration and the internal remaining interval (including grace)
     /// without starting the underlying repeating timer.
     func setPreset(totalTime: Duration) {
-        stopInternal()
+        stopAndReset()
         configure(totalTime: totalTime)
-        presentationMode = .normal
-        alertStartedAt = nil
+        resetPresentationState()
     }
 
     // MARK: - Public API
@@ -111,8 +110,7 @@ final class TimerManager {
         remainingTimeWhenNotRunning = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
-        presentationMode = .normal
-        alertStartedAt = nil
+        resetPresentationState()
         self.endDate = nil
 
         stopUnderlyingTimer()
@@ -132,7 +130,7 @@ final class TimerManager {
     }
 
     func cancel() {
-        stopInternal()
+        stopAndReset()
         resetToTotalTime()
     }
 
@@ -172,15 +170,13 @@ final class TimerManager {
         totalTimeInSeconds = totalTime
         remainingTimeInSeconds = totalTime
         remainingTimeWhenNotRunning = totalTime.toTimeInterval() + finishGrace
-        presentationMode = .normal
-        alertStartedAt = nil
+        resetPresentationState()
     }
 
 
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
-        presentationMode = .normal
-        alertStartedAt = nil
+        resetPresentationState()
         endDate = now().addingTimeInterval(interval)
 
         switch activity {
@@ -216,26 +212,56 @@ final class TimerManager {
         }
     }
 
-    #warning("Fix this")
     private func finishNaturally() {
         stopUnderlyingTimer()
-        endDate = nil
-        status = .paused
-        remainingTimeInSeconds = .seconds(0)
-        remainingTimeWhenNotRunning = 0
-        presentationMode = .alerting
-        alertStartedAt = now()
-        activityHandler?.update(for: self)
+        clearEndDate()
+        transitionToPausedState()
+        resetRemainingTimeToZero()
+        transitionToAlertingMode()
+        updateLiveActivity()
         onDidFinish?()
     }
-
-    #warning("Fix this")
-    private func stopInternal() {
-        status = .idle
+    
+    private func stopAndReset() {
+        transitionToIdleState()
         stopUnderlyingTimer()
+        clearEndDate()
+        resetPresentationState()
+        endLiveActivity()
+    }
+    
+    private func clearEndDate() {
         endDate = nil
+    }
+
+    private func transitionToPausedState() {
+        status = .paused
+    }
+
+    private func resetRemainingTimeToZero() {
+        remainingTimeInSeconds = .seconds(0)
+        remainingTimeWhenNotRunning = 0
+    }
+
+    private func transitionToAlertingMode() {
+        presentationMode = .alerting
+        alertStartedAt = now()
+    }
+
+    private func updateLiveActivity() {
+        activityHandler?.update(for: self)
+    }
+
+    private func transitionToIdleState() {
+        status = .idle
+    }
+
+    private func resetPresentationState() {
         presentationMode = .normal
         alertStartedAt = nil
+    }
+
+    private func endLiveActivity() {
         activityHandler?.end()
     }
 
