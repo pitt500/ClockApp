@@ -44,8 +44,7 @@ struct TimerManagerIntegrationTests {
             manager.setTimer(totalTime: .seconds(1))
         }
 
-        #expect(manager.status == .paused)
-        #expect(manager.presentationMode == .alerting)
+        #expect(manager.status == .idle)
         #expect(manager.remainingTimeInSeconds == .seconds(0))
     }
     

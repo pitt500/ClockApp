@@ -11,5 +11,6 @@ import SwiftUI
 protocol TimerActivityHandling {
     func start(for manager: TimerManager, title: String)
     func update(for manager: TimerManager)
+    func showAlert(title: String)
     func end()
 }

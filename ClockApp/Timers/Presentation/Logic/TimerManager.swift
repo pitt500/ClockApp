@@ -35,8 +35,6 @@ final class TimerManager {
     private(set) var totalTimeInSeconds: Duration = .seconds(0)
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
     private(set) var liveActivityRelevanceScore: Double = 0
-    private(set) var presentationMode: TimerPresentationMode = .normal
-    private(set) var alertStartedAt: Date?
 
     private var endDate: Date?
     private var finishGrace: TimeInterval = 0.50
@@ -74,7 +72,6 @@ final class TimerManager {
     func setPreset(totalTime: Duration) {
         stopAndReset()
         configure(totalTime: totalTime)
-        resetPresentationState()
     }
 
     // MARK: - Public API
@@ -110,7 +107,6 @@ final class TimerManager {
         remainingTimeWhenNotRunning = max(0, endDate.timeIntervalSince(now))
 
         status = .paused
-        resetPresentationState()
         self.endDate = nil
 
         stopUnderlyingTimer()
@@ -151,8 +147,12 @@ final class TimerManager {
         guard liveActivityRelevanceScore != score else { return }
         liveActivityRelevanceScore = score
 
-        guard status != .idle || presentationMode == .alerting else { return }
+        guard status != .idle else { return }
         activityHandler?.update(for: self)
+    }
+
+    func showAlert() {
+        activityHandler?.showAlert(title: liveActivityTitle)
     }
 
     // MARK: - Private
@@ -170,13 +170,11 @@ final class TimerManager {
         totalTimeInSeconds = totalTime
         remainingTimeInSeconds = totalTime
         remainingTimeWhenNotRunning = totalTime.toTimeInterval() + finishGrace
-        resetPresentationState()
     }
 
 
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running
-        resetPresentationState()
         endDate = now().addingTimeInterval(interval)
 
         switch activity {
@@ -215,18 +213,15 @@ final class TimerManager {
     private func finishNaturally() {
         stopUnderlyingTimer()
         clearEndDate()
-        transitionToPausedState()
+        transitionToIdleState()
         resetRemainingTimeToZero()
-        transitionToAlertingMode()
-        updateLiveActivity()
-        onDidFinish?()
+        notifyDidFinish()
     }
     
     private func stopAndReset() {
         transitionToIdleState()
         stopUnderlyingTimer()
         clearEndDate()
-        resetPresentationState()
         endLiveActivity()
     }
     
@@ -234,8 +229,8 @@ final class TimerManager {
         endDate = nil
     }
 
-    private func transitionToPausedState() {
-        status = .paused
+    private func transitionToIdleState() {
+        status = .idle
     }
 
     private func resetRemainingTimeToZero() {
@@ -243,26 +238,12 @@ final class TimerManager {
         remainingTimeWhenNotRunning = 0
     }
 
-    private func transitionToAlertingMode() {
-        presentationMode = .alerting
-        alertStartedAt = now()
-    }
-
-    private func updateLiveActivity() {
-        activityHandler?.update(for: self)
-    }
-
-    private func transitionToIdleState() {
-        status = .idle
-    }
-
-    private func resetPresentationState() {
-        presentationMode = .normal
-        alertStartedAt = nil
-    }
-
     private func endLiveActivity() {
         activityHandler?.end()
+    }
+
+    private func notifyDidFinish() {
+        onDidFinish?()
     }
 
     private func startUnderlyingTimer() {

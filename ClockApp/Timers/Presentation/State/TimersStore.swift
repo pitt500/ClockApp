@@ -10,6 +10,13 @@ import SwiftUI
 @Observable
 final class TimersStore {
 
+    struct AlertState {
+        let id: UUID
+        let label: String
+        let configuredDuration: Duration
+        let manager: TimerManager
+    }
+
     // MARK: - Draft (Picker State)
 
     struct Draft: Equatable {
@@ -33,6 +40,7 @@ final class TimersStore {
 
     private(set) var activeTimers: [TimerItem] = []
     private(set) var recentTimers: [TimerItem] = []
+    private var currentAlert: AlertState?
 
     // MARK: - Persistence
 
@@ -137,11 +145,25 @@ final class TimersStore {
 
     // MARK: - Finish Handling
 
+    #warning("crear metodo para remover timers.")
     private func handleTimerDidFinish(_ manager: TimerManager) {
         guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
 
+        activeTimers.removeAll { $0.id == item.id }
+
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
 
+        if let currentAlert {
+            currentAlert.manager.cancel()
+        }
+
+        currentAlert = AlertState(
+            id: item.id,
+            label: item.label,
+            configuredDuration: item.configuredDuration,
+            manager: item.manager
+        )
+        item.manager.showAlert()
         reconcileLiveActivities()
     }
 
@@ -196,9 +218,9 @@ final class TimersStore {
         liveActivityCoordinator.reconcile(activeTimers: activeTimers, at: .now)
     }
 
-    private func dismissAlert(_ item: TimerItem) {
-        item.manager.cancel()
-        activeTimers.removeAll { $0.id == item.id }
+    private func dismissAlert(_ alert: AlertState) {
+        alert.manager.cancel()
+        currentAlert = nil
         reconcileLiveActivities()
     }
 
@@ -254,7 +276,7 @@ extension TimersStore: TimerLiveActivityCommandHandling {
 
 extension TimersStore: TimerAlertCommandHandling {
     func dismissCurrentTimerAlert() {
-        guard let current = liveActivityCoordinator.highestPriorityAlert(from: activeTimers, at: .now) else { return }
+        guard let current = currentAlert else { return }
         dismissAlert(current)
     }
 }

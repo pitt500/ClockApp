@@ -19,7 +19,7 @@ final class TimerActivityController: TimerActivityHandling {
         }
 
         let attributes = TimerAttributes(title: title.isEmpty ? "Timer" : title)
-        let state = makeState(from: manager)
+        let state = makeNormalState(from: manager)
         let content = ActivityContent(
             state: state,
             staleDate: nil,
@@ -40,23 +40,37 @@ final class TimerActivityController: TimerActivityHandling {
     func update(for manager: TimerManager) {
         guard let activity else { return }
 
-        let state = makeState(from: manager)
+        let state = makeNormalState(from: manager)
         let content = ActivityContent(
             state: state,
             staleDate: nil,
             relevanceScore: manager.liveActivityRelevanceScore
         )
-        
-        let alertConfiguration: AlertConfiguration? = if manager.presentationMode == .alerting {
-            .init(
-                title: .init(stringLiteral: activity.attributes.title),
-                body: "",
-                sound: .default
-            )
-        } else { nil }
 
         Task {
-            await activity.update(content, alertConfiguration: alertConfiguration)
+            await activity.update(content)
+        }
+    }
+
+    func showAlert(title: String) {
+        guard let activity else { return }
+
+        let state = makeAlertState(from: activity, title: title)
+        let content = ActivityContent(
+            state: state,
+            staleDate: nil,
+            relevanceScore: 1_000
+        )
+
+        Task {
+            await activity.update(
+                content,
+                alertConfiguration: .init(
+                    title: .init(stringLiteral: title),
+                    body: "",
+                    sound: .default
+                )
+            )
         }
     }
 
@@ -72,7 +86,8 @@ final class TimerActivityController: TimerActivityHandling {
         }
     }
 
-    private func makeState(from manager: TimerManager) -> TimerAttributes.ContentState {
+    #warning("Crear dos estados diferentes para cuando esté corriendo y cuando esté detenido")
+    private func makeNormalState(from manager: TimerManager) -> TimerAttributes.ContentState {
         let now = Date.now
         let remaining = manager.remainingInterval(at: now)
 
@@ -100,7 +115,18 @@ final class TimerActivityController: TimerActivityHandling {
             endDate: endDate,
             remainingWhenNotRunning: remainingWhenNotRunning,
             displayedRemainingTime: manager.displayedRemainingTime,
-            presentationMode: manager.presentationMode
+            presentationMode: .normal
+        )
+    }
+
+    private func makeAlertState(from activity: Activity<TimerAttributes>, title: String) -> TimerAttributes.ContentState {
+        .init(
+            status: .idle,
+            totalTimeInterval: activity.content.state.totalTimeInterval,
+            endDate: nil,
+            remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(0),
+            presentationMode: .alerting
         )
     }
 }

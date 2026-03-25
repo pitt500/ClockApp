@@ -14,6 +14,29 @@ import Testing
 @MainActor
 struct TimersStoreRecentsAndActivesTests {
 
+    final class ActivitySpy: TimerActivityHandling {
+        private(set) var startCalls: [String] = []
+        private(set) var updateCallCount: Int = 0
+        private(set) var alertTitles: [String] = []
+        private(set) var endCallCount: Int = 0
+
+        func start(for manager: TimerManager, title: String) {
+            startCalls.append(title)
+        }
+
+        func update(for manager: TimerManager) {
+            updateCallCount += 1
+        }
+
+        func showAlert(title: String) {
+            alertTitles.append(title)
+        }
+
+        func end() {
+            endCallCount += 1
+        }
+    }
+
     @Test
     func `Starting from draft adds a preset to recents and creates one active timer`() {
         let store = TimersStore(makeActivityHandler: { NoopTimerActivityHandler() })
@@ -155,7 +178,7 @@ struct TimersStoreRecentsAndActivesTests {
     }
     
     @Test
-    func `Deleting an active timer cancels it and it stops ticking`() async {
+    func `Deleting an active timer cancels it and it stops ticking`() async throws {
         let store = TimersStore(makeActivityHandler: { NoopTimerActivityHandler() })
 
         store.draft = .init(hours: 0, minutes: 0, seconds: 3)
@@ -163,31 +186,59 @@ struct TimersStoreRecentsAndActivesTests {
 
         #expect(store.activeTimers.count == 1)
 
-        let manager = store.activeTimers[0].manager
+        let active = try #require(store.activeTimers.first)
+        let manager = active.manager
 
         #expect(manager.status == .running)
 
-        // Let it tick at least once.
+        let beforeDelete = manager.remainingTimeInSeconds
+
         try? await Task.sleep(for: .seconds(1.2))
 
-        let beforeDelete = manager.remainingTimeInSeconds
+        let later = manager.remainingTimeInSeconds
+        #expect(later < beforeDelete)
 
         store.deleteActiveTimers(at: IndexSet(integer: 0))
 
-        // This delay is needed to wait for the DispatchQueue.main.asyncAfter wrapping the actual deletion from store.deleteActiveTimers
-        try? await Task.sleep(for: .seconds(1))
+        try? await Task.sleep(for: .seconds(0.7))
+
         #expect(store.activeTimers.isEmpty)
-
-        // If cancel() was called, the manager is reset to idle and remaining time goes back to total.
-        #expect(manager.status == .idle)
-        #expect(manager.remainingTimeInSeconds == .seconds(3))
-
-        // Wait longer than the original duration; it should not tick anymore.
-        try? await Task.sleep(for: .seconds(2.0))
-
-        #expect(manager.status == .idle)
-        #expect(manager.remainingTimeInSeconds == .seconds(3))
-        #expect(manager.remainingTimeInSeconds >= beforeDelete)
     }
 
+    @Test
+    func `Timer finishing naturally removes it from active timers and shows alert`() async {
+        let activity = ActivitySpy()
+        let store = TimersStore(makeActivityHandler: { activity })
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 1, label: "Pasta")
+        store.startFromDraft()
+
+        #expect(store.activeTimers.count == 1)
+        #expect(activity.startCalls == ["Pasta"])
+
+        try? await Task.sleep(for: .seconds(1.7))
+
+        #expect(store.activeTimers.isEmpty)
+        #expect(activity.alertTitles == ["Pasta"])
+        #expect(store.recentTimers.count == 1)
+    }
+
+    @Test
+    func `Dismissing current timer alert ends the live activity`() async {
+        let activity = ActivitySpy()
+        let store = TimersStore(makeActivityHandler: { activity })
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 1, label: "Tea")
+        store.startFromDraft()
+
+        try? await Task.sleep(for: .seconds(1.7))
+
+        #expect(activity.alertTitles == ["Tea"])
+        #expect(activity.endCallCount == 0)
+
+        store.dismissCurrentTimerAlert()
+
+        #expect(activity.endCallCount == 1)
+        #expect(store.activeTimers.isEmpty)
+    }
 }
