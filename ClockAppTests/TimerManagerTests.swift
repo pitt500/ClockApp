@@ -1,6 +1,6 @@
 //
-//  ClockAppTests.swift
-//  ClockAppTests
+//  TimerManagerTests.swift
+//  TimerManagerTests
 //
 //  Created by Pedro Rojas on 09/02/26.
 //
