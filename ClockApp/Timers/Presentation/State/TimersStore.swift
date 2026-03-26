@@ -137,19 +137,18 @@ final class TimersStore {
         item.manager.cancel()
 
         // Remove the active instance.
-        activeTimers.removeAll { $0.id == item.id }
+        removeActiveTimer(item)
 
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
         reconcileLiveActivities()
     }
 
     // MARK: - Finish Handling
-
-    #warning("crear metodo para remover timers.")
+    
     private func handleTimerDidFinish(_ manager: TimerManager) {
         guard let item = activeTimers.first(where: { $0.manager === manager }) else { return }
 
-        activeTimers.removeAll { $0.id == item.id }
+        removeActiveTimer(item)
 
         ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
 
@@ -168,6 +167,10 @@ final class TimersStore {
     }
 
     // MARK: - Helpers
+
+    private func removeActiveTimer(_ timer: TimerItem) {
+        activeTimers.removeAll { $0.id == timer.id }
+    }
 
     private func ensureRecentPresetExists(for duration: Duration, label: String) {
         let key = recentKey(duration: duration, label: label)
