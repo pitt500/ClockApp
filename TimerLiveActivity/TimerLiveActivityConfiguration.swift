@@ -13,8 +13,10 @@ import SwiftUI
 struct TimerLiveActivityConfiguration: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerAttributes.self) { context in
-            LockScreenTimerLiveActivityView(state: context.state)
-
+            LockScreenTimerLiveActivityView(
+                state: context.state,
+                title: context.attributes.title
+            )
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {

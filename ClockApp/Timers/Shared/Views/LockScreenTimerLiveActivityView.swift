@@ -7,38 +7,69 @@
 
 
 import SwiftUI
-import WidgetKit
 
 struct LockScreenTimerLiveActivityView: View {
     let state: TimerAttributes.ContentState
-    
+    let title: String
+
     var body: some View {
-        VStack(spacing: 8) {
-            if let timerInterval = state.runningTimeInterval {
-                Text(
-                    timerInterval: timerInterval,
-                    pauseTime: nil,
-                    countsDown: true,
-                    showsHours: showsHours
-                )
-                .font(.system(size: 34, weight: .light, design: .rounded))
-                .monospacedDigit()
-            } else {
-                Text(formattedRemainingTime)
-                    .font(.system(size: 34, weight: .light, design: .rounded))
-                    .monospacedDigit()
-            }
+        HStack {
+            DynamicIslandExpandedLeadingContentView(
+                state: state,
+                title: title
+            )
+
+            DynamicIslandExpandedCenterContentView(
+                state: state,
+                title: title
+            )
+            .frame(maxWidth: .infinity, alignment: .trailing)
+
+            DynamicIslandExpandedTrailingContentView(state: state)
         }
-        .activityBackgroundTint(Color.cyan)
-        .activitySystemActionForegroundColor(Color.black)
+        .padding()
+        .background(Color.black)
     }
+}
 
-    private var showsHours: Bool {
-        let seconds = Int(max(0, state.totalTimeInterval))
-        return seconds >= 3600
-    }
+#Preview("Running") {
+    LockScreenTimerLiveActivityView(
+        state: .init(
+            status: .running,
+            totalTimeInterval: 300.5,
+            endDate: Date.now.addingTimeInterval(245),
+            remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(245),
+            presentationMode: .normal
+        ), 
+        title: "Tea"
+    )
+}
 
-    private var formattedRemainingTime: String {
-        LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
-    }
+#Preview("Paused") {
+    LockScreenTimerLiveActivityView(
+        state: .init(
+            status: .paused,
+            totalTimeInterval: 300.5,
+            endDate: nil,
+            remainingWhenNotRunning: 125,
+            displayedRemainingTime: .seconds(125),
+            presentationMode: .normal
+        ), 
+        title: "Workout"
+    )
+}
+
+#Preview("Alerting") {
+    LockScreenTimerLiveActivityView(
+        state: .init(
+            status: .idle,
+            totalTimeInterval: 300.5,
+            endDate: nil,
+            remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(0),
+            presentationMode: .alerting
+        ), 
+        title: "Pasta"
+    )
 }
