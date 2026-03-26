@@ -18,11 +18,17 @@ struct TimerLiveActivityConfiguration: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    DynamicIslandExpandedLeadingContentView(state: context.state, title: context.attributes.title)
+                    DynamicIslandExpandedLeadingContentView(
+                        state: context.state,
+                        title: context.attributes.title
+                    )
                 }
 
                 DynamicIslandExpandedRegion(.center) {
-                    DynamicIslandExpandedCenterContentView(state: context.state, title: context.attributes.title)
+                    DynamicIslandExpandedCenterContentView(
+                        state: context.state,
+                        title: context.attributes.title
+                    )
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
