@@ -141,7 +141,6 @@ final class TimerManager {
         return max(0, remainingTimeWhenNotRunning)
     }
 
-    #warning("Is this relevant to manager?")
     func refreshLiveActivity(relevanceScore: Double?) {
         guard status != .idle else { return }
         activityHandler?.update(for: self, relevanceScore: relevanceScore)
