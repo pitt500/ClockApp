@@ -24,7 +24,7 @@ struct TimersStoreRecentsAndActivesTests {
             startCalls.append(title)
         }
 
-        func update(for manager: TimerManager) {
+        func update(for manager: TimerManager, relevanceScore: Double?) {
             updateCallCount += 1
         }
 

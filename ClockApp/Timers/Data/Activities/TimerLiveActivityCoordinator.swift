@@ -55,7 +55,7 @@ final class TimerLiveActivityCoordinator: TimerLiveActivityCoordinating {
         let prioritizedIDs = Set(timers.running.map(\.id) + timers.paused.map(\.id))
 
         for item in activeTimers where !prioritizedIDs.contains(item.id) {
-            item.manager.setLiveActivityRelevanceScore(0)
+            item.manager.refreshLiveActivity(relevanceScore: 0)
         }
     }
 
@@ -66,7 +66,7 @@ final class TimerLiveActivityCoordinator: TimerLiveActivityCoordinating {
     ) {
         for (index, item) in timers.enumerated() {
             let score = max(0, topScore - (Double(index) * decrement))
-            item.manager.setLiveActivityRelevanceScore(score)
+            item.manager.refreshLiveActivity(relevanceScore: score)
         }
     }
 }

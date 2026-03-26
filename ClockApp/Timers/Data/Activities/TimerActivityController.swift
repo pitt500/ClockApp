@@ -11,6 +11,7 @@ import Foundation
 
 final class TimerActivityController: TimerActivityHandling {
     private var activity: Activity<TimerAttributes>?
+    private var relevanceScore: Double = 0
 
     func start(for manager: TimerManager, title: String) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
@@ -23,7 +24,7 @@ final class TimerActivityController: TimerActivityHandling {
         let content = ActivityContent(
             state: state,
             staleDate: nil,
-            relevanceScore: manager.liveActivityRelevanceScore
+            relevanceScore: relevanceScore
         )
 
         do {
@@ -37,14 +38,18 @@ final class TimerActivityController: TimerActivityHandling {
         }
     }
 
-    func update(for manager: TimerManager) {
+    func update(for manager: TimerManager, relevanceScore: Double?) {
+        if let relevanceScore {
+            self.relevanceScore = relevanceScore
+        }
+
         guard let activity else { return }
 
         let state = makeNormalState(from: manager)
         let content = ActivityContent(
             state: state,
             staleDate: nil,
-            relevanceScore: manager.liveActivityRelevanceScore
+            relevanceScore: self.relevanceScore
         )
 
         Task {
@@ -83,6 +88,7 @@ final class TimerActivityController: TimerActivityHandling {
                 dismissalPolicy: .immediate
             )
             self.activity = nil
+            self.relevanceScore = 0
         }
     }
 

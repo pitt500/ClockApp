@@ -34,7 +34,6 @@ final class TimerManager {
     private(set) var status: Status = .idle
     private(set) var totalTimeInSeconds: Duration = .seconds(0)
     private(set) var remainingTimeInSeconds: Duration = .seconds(0)
-    private(set) var liveActivityRelevanceScore: Double = 0
 
     private var endDate: Date?
     private var finishGrace: TimeInterval = 0.50
@@ -143,12 +142,9 @@ final class TimerManager {
     }
 
     #warning("Is this relevant to manager?")
-    func setLiveActivityRelevanceScore(_ score: Double) {
-        guard liveActivityRelevanceScore != score else { return }
-        liveActivityRelevanceScore = score
-
+    func refreshLiveActivity(relevanceScore: Double?) {
         guard status != .idle else { return }
-        activityHandler?.update(for: self)
+        activityHandler?.update(for: self, relevanceScore: relevanceScore)
     }
 
     func showAlert() {

@@ -10,7 +10,7 @@
 // without introducing Live Activities yet.
 struct NoopTimerActivityHandler: TimerActivityHandling {
     func start(for manager: TimerManager, title: String) {}
-    func update(for manager: TimerManager) {}
+    func update(for manager: TimerManager, relevanceScore: Double?) {}
     func showAlert(title: String) {}
     func end() {}
 }

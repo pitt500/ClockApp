@@ -42,12 +42,12 @@ struct TimerManagerTests {
             startCalls.append(title)
         }
 
-        func update(for manager: TimerManager) {
+        func update(for manager: TimerManager, relevanceScore: Double?) {
             updates.append((remaining: manager.remainingTimeInSeconds, isPaused: manager.status == .paused))
         }
 
         func showAlert(title: String) {
-            fatalError("TimerManager must not trigger alerts directly. This is handled by TimersStore.")
+            fatalError("This method is called by TimerStore.")
         }
 
         func end() {
@@ -176,7 +176,8 @@ struct TimerManagerTests {
         #expect(didFinish == true)
         #expect(timerManager.status == .idle)
         #expect(timerManager.remainingTimeInSeconds == .seconds(0))
-        #expect(activity.endCallCount == 0)    }
+        #expect(activity.endCallCount == 0)
+    }
 
     @Test
     func `Cancel resets timer without firing finish callback`() async {
