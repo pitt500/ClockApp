@@ -60,7 +60,7 @@ final class TimerActivityController: TimerActivityHandling {
     func showAlert(title: String) {
         guard let activity else { return }
 
-        let state = makeAlertState(from: activity, title: title)
+        let state = makeAlertState(from: activity)
         let content = ActivityContent(
             state: state,
             staleDate: nil,
@@ -92,30 +92,20 @@ final class TimerActivityController: TimerActivityHandling {
         }
     }
 
-    #warning("Crear dos estados diferentes para cuando esté corriendo y cuando esté detenido")
     private func makeNormalState(from manager: TimerManager) -> TimerAttributes.ContentState {
         let now = Date.now
         let remaining = manager.remainingInterval(at: now)
-
-        let status: TimerStatus
-        switch manager.status {
-        case .idle:
-            status = .idle
-        case .running:
-            status = .running
-        case .paused:
-            status = .paused
-        }
-
+        
+        let status = timerStatus(from: manager)
         let endDate: Date? = manager.status == .running
-            ? now.addingTimeInterval(remaining)
-            : nil
-
+        ? now.addingTimeInterval(remaining)
+        : nil
+        
         let remainingWhenNotRunning: TimeInterval = manager.status == .running
-            ? 0
-            : remaining
-
-        return .init(
+        ? 0
+        : remaining
+        
+        return makeState(
             status: status,
             totalTimeInterval: manager.totalTimeInterval,
             endDate: endDate,
@@ -124,9 +114,9 @@ final class TimerActivityController: TimerActivityHandling {
             presentationMode: .normal
         )
     }
-
-    private func makeAlertState(from activity: Activity<TimerAttributes>, title: String) -> TimerAttributes.ContentState {
-        .init(
+    
+    private func makeAlertState(from activity: Activity<TimerAttributes>) -> TimerAttributes.ContentState {
+        makeState(
             status: .idle,
             totalTimeInterval: activity.content.state.totalTimeInterval,
             endDate: nil,
@@ -134,5 +124,34 @@ final class TimerActivityController: TimerActivityHandling {
             displayedRemainingTime: .seconds(0),
             presentationMode: .alerting
         )
+    }
+    
+    private func makeState(
+        status: TimerStatus,
+        totalTimeInterval: TimeInterval,
+        endDate: Date?,
+        remainingWhenNotRunning: TimeInterval,
+        displayedRemainingTime: Duration,
+        presentationMode: TimerPresentationMode
+    ) -> TimerAttributes.ContentState {
+        .init(
+            status: status,
+            totalTimeInterval: totalTimeInterval,
+            endDate: endDate,
+            remainingWhenNotRunning: remainingWhenNotRunning,
+            displayedRemainingTime: displayedRemainingTime,
+            presentationMode: presentationMode
+        )
+    }
+    
+    private func timerStatus(from manager: TimerManager) -> TimerStatus {
+        switch manager.status {
+        case .idle:
+            return .idle
+        case .running:
+            return .running
+        case .paused:
+            return .paused
+        }
     }
 }
