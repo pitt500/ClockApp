@@ -60,7 +60,6 @@ final class TimersStore {
         TimerAlertCommandCenter.shared.handler = self
     }
 
-    #warning("Is this necessary?")
     deinit {
         if TimerLiveActivityCommandCenter.shared.handler === self {
             TimerLiveActivityCommandCenter.shared.handler = nil
