@@ -7,31 +7,48 @@
 
 import SwiftUI
 
+enum TimerAlertSound: String, CaseIterable, Identifiable {
+    case `default`
+    case alarmPitt
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .default:
+            return "Default"
+        case .alarmPitt:
+            return "Alarm Pitt"
+        }
+    }
+
+    var fileName: String? {
+        switch self {
+        case .default:
+            return nil
+        case .alarmPitt:
+            return "alarm_pitt.caf"
+        }
+    }
+}
+
 struct TimerAlertSoundPickerView: View {
-    @Binding var selectedSoundName: String?
+    @Binding var selectedSound: TimerAlertSound
     @Environment(\.dismiss) private var dismiss
 
-    private let sounds: [(title: String, soundName: String?)] = [
-        ("Default", nil),
-        ("Alarm Pitt", "alarm_pitt.caf")
-    ]
+    private let sounds = TimerAlertSound.allCases
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(sounds, id: \.title) { sound in
+                ForEach(sounds) { sound in
                     Button {
-                        selectedSoundName = sound.soundName
+                        selectedSound = sound
                         dismiss()
                     } label: {
                         HStack(spacing: 12) {
-                            if isSelected(sound) {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(.orange)
-                            } else {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(.clear)
-                            }
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(isSelected(sound) ? .orange : .clear)
 
                             Text(sound.title)
                                 .foregroundStyle(.primary)
@@ -56,7 +73,7 @@ struct TimerAlertSoundPickerView: View {
         .preferredColorScheme(.dark)
     }
 
-    private func isSelected(_ sound: (title: String, soundName: String?)) -> Bool {
-        selectedSoundName == sound.soundName
+    private func isSelected(_ sound: TimerAlertSound) -> Bool {
+        selectedSound == sound
     }
 }

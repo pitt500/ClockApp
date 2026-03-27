@@ -26,7 +26,6 @@ final class TimersStore {
         var seconds: Int = 12
 
         var label: String = ""
-        var alertSoundName: String? = nil
 
         var isValid: Bool { hours > 0 || minutes > 0 || seconds > 0 }
 
@@ -90,21 +89,21 @@ final class TimersStore {
     // MARK: - Intents
 
     /// Creates and starts a new timer from the picker draft.
-    func startFromDraft() {
+    func startFromDraft(sound: TimerAlertSound = .default) {
         guard draft.isValid else { return }
 
         // 1) Ensure the configured duration exists in Recents (unique by duration + label).
         ensureRecentPresetExists(
             for: draft.duration,
             label: draft.label,
-            alertSoundName: draft.alertSoundName
+            alertSoundName: sound.fileName
         )
 
         // 2) Always create a NEW active instance.
         let active = makeActiveTimer(
             configuredDuration: draft.duration,
             label: draft.label,
-            alertSoundName: draft.alertSoundName
+            alertSoundName: sound.fileName
         )
         startActive(active)
 

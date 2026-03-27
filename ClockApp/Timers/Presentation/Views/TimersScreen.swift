@@ -12,6 +12,7 @@ struct TimersScreen: View {
     @State private var store = TimersStore()
     @State private var didLoadRecents = false
     @State private var isShowingWhenTimerEndsDialog = false
+    @State private var selectedSound: TimerAlertSound = .default
 
     var body: some View {
         NavigationStack {
@@ -41,7 +42,7 @@ struct TimersScreen: View {
             didLoadRecents = true
         }
         .sheet(isPresented: $isShowingWhenTimerEndsDialog) {
-            TimerAlertSoundPickerView(selectedSoundName: $store.draft.alertSoundName)
+            TimerAlertSoundPickerView(selectedSound: $selectedSound)
         }
     }
 
@@ -50,7 +51,7 @@ struct TimersScreen: View {
     private var timerPickerSection: some View {
         Section {
             PickerHeaderView(draft: $store.draft) {
-                store.startFromDraft()
+                store.startFromDraft(sound: selectedSound)
             }
             .listRowInsets(.init())
             .listRowBackground(Color.clear)
@@ -101,7 +102,7 @@ struct TimersScreen: View {
 
                 Spacer(minLength: 8)
 
-                Text(selectedAlertSoundTitle)
+                Text(selectedSound.title)
                     .foregroundStyle(.secondary)
 
                 Image(systemName: "chevron.right")
@@ -112,16 +113,6 @@ struct TimersScreen: View {
             .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
-    }
-
-    #warning("Improve this")
-    private var selectedAlertSoundTitle: String {
-        switch store.draft.alertSoundName {
-        case "alarm_pitt":
-            return "Alarm Pitt"
-        default:
-            return "Default"
-        }
     }
 
     private var activeSection: some View {
