@@ -185,7 +185,7 @@ extension TimerLiveActivityCoordinatorTests {
             lastRelevanceScore = relevanceScore ?? 0
         }
 
-        func showAlert(title: String) {}
+        func showAlert(title: String, soundName: String?) {}
 
         func end() {}
     }

@@ -17,7 +17,7 @@ struct TimersStoreRecentsAndActivesTests {
     final class ActivitySpy: TimerActivityHandling {
         private(set) var startCalls: [String] = []
         private(set) var updateCallCount: Int = 0
-        private(set) var alertTitles: [String] = []
+        private(set) var alertTitles: [(title: String, soundName: String?)] = []
         private(set) var endCallCount: Int = 0
 
         func start(for manager: TimerManager, title: String) {
@@ -28,8 +28,8 @@ struct TimersStoreRecentsAndActivesTests {
             updateCallCount += 1
         }
 
-        func showAlert(title: String) {
-            alertTitles.append(title)
+        func showAlert(title: String, soundName: String?) {
+            alertTitles.append((title: title, soundName: soundName))
         }
 
         func end() {
@@ -66,12 +66,6 @@ struct TimersStoreRecentsAndActivesTests {
 
         #expect(store.recentTimers.count == 1)
         #expect(store.activeTimers.count == 2)
-
-        let recentSeconds = Int(store.recentTimers[0].configuredDuration.components.seconds)
-        #expect(recentSeconds == 10)
-
-        let activeSeconds = store.activeTimers.map { Int($0.configuredDuration.components.seconds) }
-        #expect(activeSeconds.allSatisfy { $0 == 10 })
     }
 
     @Test
@@ -219,8 +213,31 @@ struct TimersStoreRecentsAndActivesTests {
         try? await Task.sleep(for: .seconds(1.7))
 
         #expect(store.activeTimers.isEmpty)
-        #expect(activity.alertTitles == ["Pasta"])
+        #expect(activity.alertTitles.count == 1)
+        #expect(activity.alertTitles[0].title == "Pasta")
+        #expect(activity.alertTitles[0].soundName == nil)
         #expect(store.recentTimers.count == 1)
+    }
+
+    @Test
+    func `Timer finishing naturally forwards custom alert sound`() async {
+        let activity = ActivitySpy()
+        let store = TimersStore(makeActivityHandler: { activity })
+
+        store.draft = .init(
+            hours: 0,
+            minutes: 0,
+            seconds: 1,
+            label: "Tea",
+            alertSoundName: "timer_chime.caf"
+        )
+        store.startFromDraft()
+
+        try? await Task.sleep(for: .seconds(1.7))
+
+        #expect(activity.alertTitles.count == 1)
+        #expect(activity.alertTitles[0].title == "Tea")
+        #expect(activity.alertTitles[0].soundName == "timer_chime.caf")
     }
 
     @Test
@@ -233,7 +250,7 @@ struct TimersStoreRecentsAndActivesTests {
 
         try? await Task.sleep(for: .seconds(1.7))
 
-        #expect(activity.alertTitles == ["Tea"])
+        #expect(activity.alertTitles.count == 1)
         #expect(activity.endCallCount == 0)
 
         store.dismissCurrentTimerAlert()

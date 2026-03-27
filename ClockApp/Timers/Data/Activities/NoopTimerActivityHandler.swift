@@ -5,12 +5,9 @@
 //  Created by Pedro Rojas on 21/01/26.
 //
 
-
-// No-op implementation used in Chapter 1 so we can keep the timer logic ready
-// without introducing Live Activities yet.
 struct NoopTimerActivityHandler: TimerActivityHandling {
     func start(for manager: TimerManager, title: String) {}
     func update(for manager: TimerManager, relevanceScore: Double?) {}
-    func showAlert(title: String) {}
+    func showAlert(title: String, soundName: String?) {}
     func end() {}
 }

@@ -146,8 +146,8 @@ final class TimerManager {
         activityHandler?.update(for: self, relevanceScore: relevanceScore)
     }
 
-    func showAlert() {
-        activityHandler?.showAlert(title: liveActivityTitle)
+    func showAlert(soundName: String?) {
+        activityHandler?.showAlert(title: liveActivityTitle, soundName: soundName)
     }
 
     // MARK: - Private
@@ -166,7 +166,6 @@ final class TimerManager {
         remainingTimeInSeconds = totalTime
         remainingTimeWhenNotRunning = totalTime.toTimeInterval() + finishGrace
     }
-
 
     private func enterRunning(interval: TimeInterval, activity: ActivityTransition) {
         status = .running

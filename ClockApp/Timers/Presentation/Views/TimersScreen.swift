@@ -11,6 +11,7 @@ import SwiftUI
 struct TimersScreen: View {
     @State private var store = TimersStore()
     @State private var didLoadRecents = false
+    @State private var isShowingWhenTimerEndsDialog = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,9 @@ struct TimersScreen: View {
             guard !didLoadRecents else { return }
             await store.loadRecentTimers()
             didLoadRecents = true
+        }
+        .sheet(isPresented: $isShowingWhenTimerEndsDialog) {
+            TimerAlertSoundPickerView(selectedSoundName: $store.draft.alertSoundName)
         }
     }
 
@@ -89,7 +93,7 @@ struct TimersScreen: View {
 
     private var whenTimerEndsRow: some View {
         Button {
-            // Placeholder: no behavior yet
+            isShowingWhenTimerEndsDialog = true
         } label: {
             HStack(spacing: 12) {
                 Text("When Timer Ends")
@@ -97,7 +101,7 @@ struct TimersScreen: View {
 
                 Spacer(minLength: 8)
 
-                Text("Radar")
+                Text(selectedAlertSoundTitle)
                     .foregroundStyle(.secondary)
 
                 Image(systemName: "chevron.right")
@@ -108,6 +112,16 @@ struct TimersScreen: View {
             .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
+    }
+
+    #warning("Improve this")
+    private var selectedAlertSoundTitle: String {
+        switch store.draft.alertSoundName {
+        case "alarm_pitt":
+            return "Alarm Pitt"
+        default:
+            return "Default"
+        }
     }
 
     private var activeSection: some View {

@@ -14,6 +14,7 @@ final class TimersStore {
         let id: UUID
         let label: String
         let configuredDuration: Duration
+        let alertSoundName: String?
         let manager: TimerManager
     }
 
@@ -25,6 +26,7 @@ final class TimersStore {
         var seconds: Int = 12
 
         var label: String = ""
+        var alertSoundName: String? = nil
 
         var isValid: Bool { hours > 0 || minutes > 0 || seconds > 0 }
 
@@ -92,10 +94,18 @@ final class TimersStore {
         guard draft.isValid else { return }
 
         // 1) Ensure the configured duration exists in Recents (unique by duration + label).
-        ensureRecentPresetExists(for: draft.duration, label: draft.label)
+        ensureRecentPresetExists(
+            for: draft.duration,
+            label: draft.label,
+            alertSoundName: draft.alertSoundName
+        )
 
         // 2) Always create a NEW active instance.
-        let active = makeActiveTimer(configuredDuration: draft.duration, label: draft.label)
+        let active = makeActiveTimer(
+            configuredDuration: draft.duration,
+            label: draft.label,
+            alertSoundName: draft.alertSoundName
+        )
         startActive(active)
 
         draft = .init()
@@ -104,7 +114,11 @@ final class TimersStore {
     /// Starts a new active timer instance from a Recents preset.
     /// Recents is not modified (the preset stays in the list).
     func activate(_ preset: TimerItem) {
-        let active = makeActiveTimer(configuredDuration: preset.configuredDuration, label: preset.label)
+        let active = makeActiveTimer(
+            configuredDuration: preset.configuredDuration,
+            label: preset.label,
+            alertSoundName: preset.alertSoundName
+        )
         startActive(active)
     }
 
@@ -138,7 +152,11 @@ final class TimersStore {
         // Remove the active instance.
         removeActiveTimer(item)
 
-        ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
+        ensureRecentPresetExists(
+            for: item.configuredDuration,
+            label: item.label,
+            alertSoundName: item.alertSoundName
+        )
         reconcileLiveActivities()
     }
 
@@ -149,7 +167,11 @@ final class TimersStore {
 
         removeActiveTimer(item)
 
-        ensureRecentPresetExists(for: item.configuredDuration, label: item.label)
+        ensureRecentPresetExists(
+            for: item.configuredDuration,
+            label: item.label,
+            alertSoundName: item.alertSoundName
+        )
 
         if let currentAlert {
             currentAlert.manager.cancel()
@@ -159,9 +181,10 @@ final class TimersStore {
             id: item.id,
             label: item.label,
             configuredDuration: item.configuredDuration,
+            alertSoundName: item.alertSoundName,
             manager: item.manager
         )
-        item.manager.showAlert()
+        item.manager.showAlert(soundName: item.alertSoundName)
         reconcileLiveActivities()
     }
 
@@ -171,7 +194,11 @@ final class TimersStore {
         activeTimers.removeAll { $0.id == timer.id }
     }
 
-    private func ensureRecentPresetExists(for duration: Duration, label: String) {
+    private func ensureRecentPresetExists(
+        for duration: Duration,
+        label: String,
+        alertSoundName: String?
+    ) {
         let key = recentKey(duration: duration, label: label)
         guard !recentTimers.contains(where: { recentKey(duration: $0.configuredDuration, label: $0.label) == key }) else {
             return
@@ -183,6 +210,7 @@ final class TimersStore {
         let preset = TimerItem(
             label: label,
             configuredDuration: duration,
+            alertSoundName: alertSoundName,
             manager: manager
         )
 
@@ -191,10 +219,15 @@ final class TimersStore {
         persistRecents()
     }
 
-    private func makeActiveTimer(configuredDuration: Duration, label: String) -> TimerItem {
+    private func makeActiveTimer(
+        configuredDuration: Duration,
+        label: String,
+        alertSoundName: String?
+    ) -> TimerItem {
         TimerItem(
             label: label,
             configuredDuration: configuredDuration,
+            alertSoundName: alertSoundName,
             manager: TimerManager(
                 label: label,
                 activityHandler: makeActivityHandler()

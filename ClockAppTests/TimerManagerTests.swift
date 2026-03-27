@@ -46,7 +46,7 @@ struct TimerManagerTests {
             updates.append((remaining: manager.remainingTimeInSeconds, isPaused: manager.status == .paused))
         }
 
-        func showAlert(title: String) {
+        func showAlert(title: String, soundName: String?) {
             fatalError("This method is called by TimerStore.")
         }
 

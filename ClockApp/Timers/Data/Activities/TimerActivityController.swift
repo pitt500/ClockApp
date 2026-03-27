@@ -57,7 +57,7 @@ final class TimerActivityController: TimerActivityHandling {
         }
     }
 
-    func showAlert(title: String) {
+    func showAlert(title: String, soundName: String?) {
         guard let activity else { return }
 
         let state = makeAlertState(from: activity)
@@ -67,13 +67,19 @@ final class TimerActivityController: TimerActivityHandling {
             relevanceScore: 1_000
         )
 
+        let sound: AlertConfiguration.AlertSound = if let soundName {
+            .named(soundName)
+        } else {
+            .default
+        }
+
         Task {
             await activity.update(
                 content,
                 alertConfiguration: .init(
                     title: .init(stringLiteral: title),
                     body: "",
-                    sound: .default
+                    sound: sound
                 )
             )
         }
