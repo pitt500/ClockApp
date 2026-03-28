@@ -29,7 +29,6 @@ struct LockScreenTimerLiveActivityView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding()
-        .background(Color.black)
     }
 }
 
