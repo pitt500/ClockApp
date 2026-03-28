@@ -229,15 +229,14 @@ struct TimersStoreRecentsAndActivesTests {
             minutes: 0,
             seconds: 1,
             label: "Tea",
-            alertSoundName: "timer_chime.caf"
         )
-        store.startFromDraft()
+        store.startFromDraft(sound: .alarmPitt)
 
         try? await Task.sleep(for: .seconds(1.7))
 
         #expect(activity.alertTitles.count == 1)
         #expect(activity.alertTitles[0].title == "Tea")
-        #expect(activity.alertTitles[0].soundName == "timer_chime.caf")
+        #expect(activity.alertTitles[0].soundName == TimerAlertSound.alarmPitt.fileName)
     }
 
     @Test
