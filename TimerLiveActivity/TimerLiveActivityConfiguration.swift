@@ -34,7 +34,7 @@ struct TimerLiveActivityConfiguration: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
-                    DynamicIslandExpandedTrailingContentView(state: context.state)
+                    DynamicIslandExpandedTrailingTimerView(state: context.state)
                 }
             } compactLeading: {
                 DynamicIslandCompactLeadingContentView(state: context.state)

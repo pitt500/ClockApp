@@ -1,5 +1,5 @@
 //
-//  DynamicIslandExpandedTrailingContentView.swift
+//  DynamicIslandExpandedTrailingTimerView.swift
 //  ClockApp
 //
 //  Created by Pedro Rojas on 26/03/26.
@@ -8,7 +8,7 @@
 import SwiftUI
 import AppIntents
 
-struct DynamicIslandExpandedTrailingContentView: View {
+struct DynamicIslandExpandedTrailingTimerView: View {
     let state: TimerAttributes.ContentState
 
     var body: some View {

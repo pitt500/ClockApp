@@ -25,7 +25,7 @@ struct LockScreenTimerLiveActivityView: View {
             )
             .frame(maxWidth: .infinity, alignment: .trailing)
 
-            DynamicIslandExpandedTrailingContentView(state: state)
+            DynamicIslandExpandedTrailingTimerView(state: state)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding()
