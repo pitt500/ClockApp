@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct TimersScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var store = TimersStore()
     @State private var didLoadRecents = false
     @State private var isShowingWhenTimerEndsDialog = false
@@ -43,6 +45,10 @@ struct TimersScreen: View {
         }
         .sheet(isPresented: $isShowingWhenTimerEndsDialog) {
             TimerAlertSoundPickerView(selectedSound: $selectedSound)
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            guard newValue == .active else { return }
+            store.dismissCurrentTimerAlert()
         }
     }
 
