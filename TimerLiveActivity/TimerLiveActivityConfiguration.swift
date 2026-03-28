@@ -41,7 +41,7 @@ struct TimerLiveActivityConfiguration: Widget {
             } compactTrailing: {
                 DynamicIslandCompactTrailingContentView(state: context.state)
             } minimal: {
-                DynamicIslandMinimalContentView(state: context.state)
+                DynamicIslandMinimalTimerView(state: context.state)
             }
             .keylineTint(.orange)
         }

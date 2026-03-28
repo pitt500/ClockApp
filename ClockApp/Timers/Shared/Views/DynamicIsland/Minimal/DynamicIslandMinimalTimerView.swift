@@ -1,5 +1,5 @@
 //
-//  DynamicIslandMinimalContentView.swift
+//  DynamicIslandMinimalTimerView.swift
 //  ClockApp
 //
 //  Created by Pedro Rojas on 26/03/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DynamicIslandMinimalContentView: View {
+struct DynamicIslandMinimalTimerView: View {
     let state: TimerAttributes.ContentState
 
     var body: some View {

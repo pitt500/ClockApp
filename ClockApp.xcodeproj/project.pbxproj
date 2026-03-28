@@ -76,7 +76,7 @@
 				Timers/Shared/Views/DynamicIsland/Expanded/DynamicIslandExpandedCenterContentView.swift,
 				Timers/Shared/Views/DynamicIsland/Expanded/DynamicIslandExpandedLeadingContentView.swift,
 				Timers/Shared/Views/DynamicIsland/Expanded/DynamicIslandExpandedTrailingContentView.swift,
-				Timers/Shared/Views/DynamicIsland/Minimal/DynamicIslandMinimalContentView.swift,
+				Timers/Shared/Views/DynamicIsland/Minimal/DynamicIslandMinimalTimerView.swift,
 				Timers/Shared/Views/DynamicIsland/Minimal/TimerProgressRingView.swift,
 				Timers/Shared/Views/Helpers/LiveActivityTimerFormatting.swift,
 				Timers/Shared/Views/Helpers/TimerControlButton.swift,
