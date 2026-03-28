@@ -18,6 +18,7 @@ actor FileTimersPersistence: TimersPersistence {
     private struct RecentDTO: Codable {
         var durationInSeconds: Duration
         var label: String
+        var alertSoundName: String?
     }
 
     private let schemaVersion = 1
@@ -38,8 +39,8 @@ actor FileTimersPersistence: TimersPersistence {
         case 1:
             return try await withThrowingTaskGroup(of: TimerItem.self) { group in
                 for dto in payload.recents {
-                    group.addTask { [duration = dto.durationInSeconds, label = dto.label] in
-                        await self.makeRecentTimerItem(duration: duration, label: label)
+                    group.addTask { [duration = dto.durationInSeconds, label = dto.label, alertSoundName = dto.alertSoundName] in
+                        await self.makeRecentTimerItem(duration: duration, label: label, alertSoundName: alertSoundName)
                     }
                 }
 
@@ -62,7 +63,8 @@ actor FileTimersPersistence: TimersPersistence {
         let recents = timers.map { item in
             RecentDTO(
                 durationInSeconds: item.configuredDuration,
-                label: item.label
+                label: item.label,
+                alertSoundName: item.alertSoundName
             )
         }
 
@@ -79,7 +81,7 @@ actor FileTimersPersistence: TimersPersistence {
 
     // MARK: - Helpers
 
-    private func makeRecentTimerItem(duration: Duration, label: String) async -> TimerItem {
+    private func makeRecentTimerItem(duration: Duration, label: String, alertSoundName: String?) async -> TimerItem {
         let manager = await MainActor.run { () -> TimerManager in
             let manager = TimerManager(label: label)
             manager.setPreset(totalTime: duration)
@@ -89,6 +91,7 @@ actor FileTimersPersistence: TimersPersistence {
         return await TimerItem(
             label: label,
             configuredDuration: duration,
+            alertSoundName: alertSoundName,
             manager: manager
         )
     }
