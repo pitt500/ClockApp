@@ -15,7 +15,7 @@ struct DynamicIslandMinimalContentView: View {
             Image(systemName: "bell.fill")
                 .foregroundStyle(.orange)
         } else {
-            MinimalTimerLiveActivityView(state: state)
+            TimerProgressRingView(state: state)
         }
     }
 

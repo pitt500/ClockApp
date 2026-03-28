@@ -1,5 +1,5 @@
 //
-//  MinimalTimerLiveActivityView.swift
+//  TimerProgressRingView.swift
 //  ClockApp
 //
 //  Created by Pedro Rojas on 03/03/26.
@@ -9,7 +9,7 @@
 import SwiftUI
 import WidgetKit
 
-struct MinimalTimerLiveActivityView: View {
+struct TimerProgressRingView: View {
     let state: TimerAttributes.ContentState
     
     var body: some View {
@@ -41,7 +41,7 @@ struct MinimalTimerLiveActivityView: View {
 }
 
 #Preview {
-    MinimalTimerLiveActivityView(
+    TimerProgressRingView(
         state: .init(
             status: .running,
             totalTimeInterval: 30.5,
