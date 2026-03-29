@@ -152,22 +152,10 @@ struct TimersScreen: View {
     private var recentsSection: some View {
         Section {
             ForEach(store.recentTimers) { item in
-                NavigationLink {
-                    TimerDetailView(
-                        provider: TimerDetailProviderFromManager(
-                            item: item,
-                            onStartRequested: { item in
-                                store.activate(item)
-                            }
-                        ),
-                        onCancel: { store.cancel(item) }
-                    )
-                } label: {
-                    TimerRowView(
-                        item: item,
-                        onPrimaryAction: { store.toggle(item) }
-                    )
-                }
+                TimerRowView(
+                    item: item,
+                    onPrimaryAction: { store.toggle(item) }
+                )
                 .listRowSeparator(.visible)
                 .listRowSeparatorTint(ClockTimerStyle.separatorTint)
             }
