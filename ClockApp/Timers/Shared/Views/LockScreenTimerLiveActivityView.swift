@@ -14,21 +14,23 @@ struct LockScreenTimerLiveActivityView: View {
 
     var body: some View {
         HStack {
-            DynamicIslandExpandedLeadingContentView(
-                state: state,
-                title: title
-            )
-
-            DynamicIslandExpandedCenterContentView(
-                state: state,
-                title: title
-            )
-            .frame(maxWidth: .infinity, alignment: .trailing)
-
-            DynamicIslandExpandedTrailingTimerView(state: state)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            if isAlerting  {
+                BigTimerTitle(title: title)
+                DismissButton()
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                PauseResumeButtonsView(state: state)
+                SmallTimerTitle(title: title)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                ExpandedRemainingTimeView(state: state)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
         }
         .padding()
+    }
+    
+    private var isAlerting: Bool {
+        state.presentationMode == .alerting
     }
 }
 
@@ -41,7 +43,7 @@ struct LockScreenTimerLiveActivityView: View {
             remainingWhenNotRunning: 0,
             displayedRemainingTime: .seconds(245),
             presentationMode: .normal
-        ), 
+        ),
         title: "Tea"
     )
 }

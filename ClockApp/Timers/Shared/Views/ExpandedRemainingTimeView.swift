@@ -1,46 +1,16 @@
 //
-//  DynamicIslandExpandedTrailingTimerView.swift
+//  ExpandedRemainingTimeView.swift
 //  ClockApp
 //
-//  Created by Pedro Rojas on 26/03/26.
+//  Created by Pedro Rojas on 28/03/26.
 //
 
 import SwiftUI
-import AppIntents
 
-struct DynamicIslandExpandedTrailingTimerView: View {
+struct ExpandedRemainingTimeView: View {
     let state: TimerAttributes.ContentState
-
+    
     var body: some View {
-        if isAlerting {
-            Button(intent: DismissTimerAlertIntent()) {
-                TimerControlButton(
-                    systemImage: "xmark",
-                    style: .secondary
-                )
-            }
-            .buttonStyle(.plain)
-        } else {
-            expandedTrailingRemainingTimeView
-        }
-    }
-
-    @ViewBuilder
-    private var remainingTimeView: some View {
-        if let timerInterval = state.runningTimeInterval {
-            Text(
-                timerInterval: timerInterval,
-                pauseTime: nil,
-                countsDown: true,
-                showsHours: showsHours
-            )
-        } else {
-            Text(formattedPausedTime)
-        }
-    }
-
-    @ViewBuilder
-    private var expandedTrailingRemainingTimeView: some View {
         if state.runningTimeInterval != nil {
             remainingTimeView
                 .font(.body.scaled(by: 3.0))
@@ -61,11 +31,21 @@ struct DynamicIslandExpandedTrailingTimerView: View {
                 .frame(maxHeight: .infinity, alignment: .center)
         }
     }
-
-    private var isAlerting: Bool {
-        state.presentationMode == .alerting
+    
+    @ViewBuilder
+    private var remainingTimeView: some View {
+        if let timerInterval = state.runningTimeInterval {
+            Text(
+                timerInterval: timerInterval,
+                pauseTime: nil,
+                countsDown: true,
+                showsHours: showsHours
+            )
+        } else {
+            Text(formattedPausedTime)
+        }
     }
-
+    
     private var showsHours: Bool {
         let seconds = Int(max(0, state.totalTimeInterval))
         return seconds >= 3600
@@ -74,4 +54,17 @@ struct DynamicIslandExpandedTrailingTimerView: View {
     private var formattedPausedTime: String {
         LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
     }
+}
+
+#Preview {
+    ExpandedRemainingTimeView(
+        state: .init(
+            status: .running,
+            totalTimeInterval: 300.5,
+            endDate: Date.now.addingTimeInterval(245),
+            remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(245),
+            presentationMode: .normal
+        )
+    )
 }

@@ -1,25 +1,16 @@
 //
-//  DynamicIslandCompactTrailingContentView.swift
+//  CompactRemainingTime.swift
 //  ClockApp
 //
-//  Created by Pedro Rojas on 26/03/26.
+//  Created by Pedro Rojas on 28/03/26.
 //
 
 import SwiftUI
 
-struct DynamicIslandCompactTrailingContentView: View {
+struct CompactRemainingTime: View {
     let state: TimerAttributes.ContentState
-
+    
     var body: some View {
-        if isAlerting {
-            EmptyView()
-        } else {
-            compactTrailingRemainingTimeView
-        }
-    }
-
-    @ViewBuilder
-    private var compactTrailingRemainingTimeView: some View {
         let placeholder = placeholderFormat
 
         if let timerInterval = state.runningTimeInterval {
@@ -65,4 +56,17 @@ struct DynamicIslandCompactTrailingContentView: View {
     private var formattedPausedTime: String {
         LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
     }
+}
+
+#Preview {
+    CompactRemainingTime(
+        state: .init(
+            status: .running,
+            totalTimeInterval: 300.5,
+            endDate: Date.now.addingTimeInterval(245),
+            remainingWhenNotRunning: 0,
+            displayedRemainingTime: .seconds(245),
+            presentationMode: .normal
+        )
+    )
 }

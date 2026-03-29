@@ -20,28 +20,47 @@ struct TimerLiveActivityConfiguration: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    DynamicIslandExpandedLeadingContentView(
-                        state: context.state,
-                        title: context.attributes.title
-                    )
+                    if context.state.presentationMode == .alerting  {
+                        BigTimerTitle(title: context.attributes.title)
+                    } else {
+                        PauseResumeButtonsView(state: context.state)
+                    }
                 }
 
                 DynamicIslandExpandedRegion(.center) {
-                    DynamicIslandExpandedCenterContentView(
-                        state: context.state,
-                        title: context.attributes.title
-                    )
+                    if context.state.presentationMode == .alerting {
+                        EmptyView()
+                    } else {
+                        SmallTimerTitle(title: context.attributes.title)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
-                    DynamicIslandExpandedTrailingTimerView(state: context.state)
+                    if context.state.presentationMode == .alerting {
+                        DismissButton()
+                    } else {
+                        ExpandedRemainingTimeView(state: context.state)
+                    }
                 }
             } compactLeading: {
-                DynamicIslandCompactLeadingContentView(state: context.state)
+                if context.state.presentationMode == .alerting {
+                    BellView()
+                } else {
+                    TimerProgressRingView(state: context.state)
+                }
             } compactTrailing: {
-                DynamicIslandCompactTrailingContentView(state: context.state)
+                if context.state.presentationMode == .alerting {
+                    EmptyView()
+                } else {
+                    CompactRemainingTime(state: context.state)
+                }
             } minimal: {
-                DynamicIslandMinimalTimerView(state: context.state)
+                if context.state.presentationMode == .alerting {
+                    BellView()
+                } else {
+                    TimerProgressRingView(state: context.state)
+                }
             }
             .keylineTint(.orange)
         }
