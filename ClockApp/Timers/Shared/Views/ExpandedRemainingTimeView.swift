@@ -9,11 +9,12 @@ import SwiftUI
 
 struct ExpandedRemainingTimeView: View {
     let state: TimerAttributes.ContentState
+    @ScaledMetric(relativeTo: .body) private var expandedTimeSize: CGFloat = 51
     
     var body: some View {
         if state.runningTimeInterval != nil {
             remainingTimeView
-                .font(.body.scaled(by: 3.0))
+                .font(expandedTimeFont)
                 .monospacedDigit()
                 .minimumScaleFactor(0.4)
                 .lineLimit(1)
@@ -22,7 +23,7 @@ struct ExpandedRemainingTimeView: View {
                 .frame(maxHeight: .infinity, alignment: .center)
         } else {
             Text(formattedPausedTime)
-                .font(.body.scaled(by: 3.0))
+                .font(expandedTimeFont)
                 .monospacedDigit()
                 .minimumScaleFactor(0.4)
                 .lineLimit(1)
@@ -53,6 +54,10 @@ struct ExpandedRemainingTimeView: View {
 
     private var formattedPausedTime: String {
         LiveActivityTimerFormatting.formattedDisplayTime(state.displayedRemainingTime)
+    }
+
+    private var expandedTimeFont: Font {
+        .system(size: expandedTimeSize)
     }
 }
 
