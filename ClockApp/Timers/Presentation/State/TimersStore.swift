@@ -198,8 +198,19 @@ final class TimersStore {
         label: String,
         alertSoundName: String?
     ) {
-        let key = recentKey(duration: duration, label: label)
-        guard !recentTimers.contains(where: { recentKey(duration: $0.configuredDuration, label: $0.label) == key }) else {
+        let key = recentKey(
+            duration: duration,
+            label: label,
+            alertSoundName: alertSoundName
+        )
+
+        guard !recentTimers.contains(where: {
+            recentKey(
+                duration: $0.configuredDuration,
+                label: $0.label,
+                alertSoundName: $0.alertSoundName
+            ) == key
+        }) else {
             return
         }
 
@@ -262,8 +273,9 @@ final class TimersStore {
         max(0, Int(duration.components.seconds))
     }
 
-    private func recentKey(duration: Duration, label: String) -> String {
-        "\(durationKey(duration))|\(label)"
+    private func recentKey(duration: Duration, label: String, alertSoundName: String?) -> String {
+        let soundKey = alertSoundName ?? "default"
+        return "\(durationKey(duration))|\(label)|\(soundKey)"
     }
 }
 

@@ -257,4 +257,38 @@ struct TimersStoreRecentsAndActivesTests {
         #expect(activity.endCallCount == 1)
         #expect(store.activeTimers.isEmpty)
     }
+    
+    @Test
+    func `Starting same duration and label with different sound creates two recents`() {
+        let store = TimersStore(makeActivityHandler: { NoopTimerActivityHandler() })
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Tea")
+        store.startFromDraft(sound: .default)
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Tea")
+        store.startFromDraft(sound: .alarmPitt)
+
+        #expect(store.recentTimers.count == 2)
+        #expect(store.activeTimers.count == 2)
+
+        let soundNames = Set(store.recentTimers.map(\.alertSoundName))
+        #expect(soundNames == Set([nil, TimerAlertSound.alarmPitt.fileName]))
+    }
+    
+    @Test
+    func `Starting same duration, label and sound creates only one timer in recents`() {
+        let store = TimersStore(makeActivityHandler: { NoopTimerActivityHandler() })
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Tea")
+        store.startFromDraft(sound: .default)
+
+        store.draft = .init(hours: 0, minutes: 0, seconds: 10, label: "Tea")
+        store.startFromDraft(sound: .default)
+
+        #expect(store.recentTimers.count == 1)
+        #expect(store.activeTimers.count == 2)
+
+        let soundNames = Set(store.recentTimers.map(\.alertSoundName))
+        #expect(soundNames == Set([nil]))
+    }
 }
