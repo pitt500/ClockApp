@@ -12,6 +12,7 @@ protocol TimerAlertCommandHandling: AnyObject {
     func dismissCurrentTimerAlert()
 }
 
+@MainActor
 final class TimerAlertCommandCenter {
     static let shared = TimerAlertCommandCenter()
 
@@ -25,8 +26,7 @@ final class TimerAlertCommandCenter {
 }
 
 struct DismissTimerAlertIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource = "Dismiss Timer Alert"
-    static var openAppWhenRun: Bool = false
+    static let title: LocalizedStringResource = "Dismiss Timer Alert"
 
     func perform() async throws -> some IntentResult {
         await TimerAlertCommandCenter.shared.dismissCurrentAlert()

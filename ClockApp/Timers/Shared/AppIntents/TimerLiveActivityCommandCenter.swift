@@ -13,6 +13,7 @@ protocol TimerLiveActivityCommandHandling: AnyObject {
     func cancelCurrentLiveActivityTimer()
 }
 
+@MainActor
 final class TimerLiveActivityCommandCenter {
     static let shared = TimerLiveActivityCommandCenter()
 
@@ -30,8 +31,7 @@ final class TimerLiveActivityCommandCenter {
 }
 
 struct PauseOrResumeTimerIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource = "Pause or Resume Timer"
-    static var openAppWhenRun: Bool = false
+    static let title: LocalizedStringResource = "Pause or Resume Timer"
 
     func perform() async throws -> some IntentResult {
         await TimerLiveActivityCommandCenter.shared.toggleCurrentTimer()
@@ -40,8 +40,7 @@ struct PauseOrResumeTimerIntent: LiveActivityIntent {
 }
 
 struct CancelTimerIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource = "Cancel Timer"
-    static var openAppWhenRun: Bool = false
+    static let title: LocalizedStringResource = "Cancel Timer"
 
     func perform() async throws -> some IntentResult {
         await TimerLiveActivityCommandCenter.shared.cancelCurrentTimer()

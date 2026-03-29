@@ -253,7 +253,8 @@ final class TimerManager {
         timer = nil
     }
 
-    deinit {
+    // Swift 6 requires an isolated deinit here so we can safely call actor-isolated cleanup.
+    isolated deinit {
         stopUnderlyingTimer()
     }
 }

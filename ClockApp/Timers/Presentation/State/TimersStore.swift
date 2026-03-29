@@ -61,16 +61,6 @@ final class TimersStore {
         TimerAlertCommandCenter.shared.handler = self
     }
 
-    deinit {
-        if TimerLiveActivityCommandCenter.shared.handler === self {
-            TimerLiveActivityCommandCenter.shared.handler = nil
-        }
-
-        if TimerAlertCommandCenter.shared.handler === self {
-            TimerAlertCommandCenter.shared.handler = nil
-        }
-    }
-
     // MARK: - Persistence API
 
     func loadRecentTimers() async {

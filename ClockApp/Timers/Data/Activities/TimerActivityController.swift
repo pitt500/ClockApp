@@ -52,8 +52,8 @@ final class TimerActivityController: TimerActivityHandling {
             relevanceScore: self.relevanceScore
         )
 
-        Task {
-            await activity.update(content)
+        Task { [activity, content] in
+            await Self.update(activity: activity, content: content)
         }
     }
 
@@ -73,26 +73,22 @@ final class TimerActivityController: TimerActivityHandling {
             .default
         }
 
-        Task {
-            await activity.update(
-                content,
-                alertConfiguration: .init(
-                    title: .init(stringLiteral: title),
-                    body: "",
-                    sound: sound
-                )
+        Task { [activity, content, title, sound] in
+            await Self.update(
+                activity: activity,
+                content: content,
+                title: title,
+                sound: sound
             )
         }
     }
 
     func end() {
         guard let activity else { return }
+        let state = activity.content.state
 
-        Task {
-            await activity.end(
-                .init(state: activity.content.state, staleDate: nil),
-                dismissalPolicy: .immediate
-            )
+        Task { [activity, state] in
+            await Self.end(activity: activity, state: state)
             self.activity = nil
             self.relevanceScore = 0
         }
@@ -159,5 +155,41 @@ final class TimerActivityController: TimerActivityHandling {
         case .paused:
             return .paused
         }
+    }
+
+    // Swift 6 strict concurrency requires explicit transfer when using Activity in Task closures;
+    // these static helpers isolate the async calls and accept `sending` parameters to avoid
+    // data-race diagnostics without changing runtime behavior.
+    private static func update(
+        activity: sending Activity<TimerAttributes>,
+        content: ActivityContent<TimerAttributes.ContentState>
+    ) async {
+        await activity.update(content)
+    }
+
+    private static func update(
+        activity: sending Activity<TimerAttributes>,
+        content: ActivityContent<TimerAttributes.ContentState>,
+        title: String,
+        sound: AlertConfiguration.AlertSound
+    ) async {
+        await activity.update(
+            content,
+            alertConfiguration: .init(
+                title: .init(stringLiteral: title),
+                body: "",
+                sound: sound
+            )
+        )
+    }
+
+    private static func end(
+        activity: sending Activity<TimerAttributes>,
+        state: TimerAttributes.ContentState
+    ) async {
+        await activity.end(
+            .init(state: state, staleDate: nil),
+            dismissalPolicy: .immediate
+        )
     }
 }
