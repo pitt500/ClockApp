@@ -46,12 +46,12 @@ final class TimersStore {
     // MARK: - Persistence
 
     private let persistence: TimersPersistence
-    private let liveActivityCoordinator: TimerLiveActivityCoordinating
+    private let liveActivityCoordinator: TimerLiveActivityPrioritizing
     private let makeActivityHandler: () -> TimerActivityHandling
 
     init(
         persistence: TimersPersistence = FileTimersPersistence(),
-        liveActivityCoordinator: TimerLiveActivityCoordinating = TimerLiveActivityCoordinator(),
+        liveActivityCoordinator: TimerLiveActivityPrioritizing = TimerLiveActivityPrioritizer(),
         makeActivityHandler: @escaping () -> TimerActivityHandling = { TimerActivityController() }
     ) {
         self.persistence = persistence

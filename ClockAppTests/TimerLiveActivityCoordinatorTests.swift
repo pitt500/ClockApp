@@ -16,7 +16,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Highest priority timer prefers running timer with smallest remaining interval`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let slow = makeRunningTimerItem(label: "Slow", seconds: 90).item
         let fast = makeRunningTimerItem(label: "Fast", seconds: 20).item
@@ -28,7 +28,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Highest priority timer prefers running timer over paused timer`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let paused = makePausedTimerItem(label: "Paused", seconds: 10).item
         let running = makeRunningTimerItem(label: "Running", seconds: 60).item
@@ -40,7 +40,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Highest priority timer prefers paused timer when no running timers exist`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let longPaused = makePausedTimerItem(label: "Long", seconds: 60).item
         let shortPaused = makePausedTimerItem(label: "Short", seconds: 10).item
@@ -52,7 +52,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Highest priority timer returns nil for empty timers`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let result = coordinator.highestPriorityTimer(from: [], at: fixedNow)
 
@@ -61,7 +61,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Reconcile assigns highest relevance score to the most urgent running timer`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let first = makeRunningTimerItem(label: "First", seconds: 10)
         let second = makeRunningTimerItem(label: "Second", seconds: 30)
@@ -74,7 +74,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Reconcile keeps paused timers below running timers`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let running = makeRunningTimerItem(label: "Running", seconds: 20)
         let paused = makePausedTimerItem(label: "Paused", seconds: 10)
@@ -87,7 +87,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Reconcile gives highest score to paused timer when no running timers exist`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let first = makePausedTimerItem(label: "First", seconds: 10)
         let second = makePausedTimerItem(label: "Second", seconds: 30)
@@ -100,7 +100,7 @@ struct TimerLiveActivityCoordinatorTests {
 
     @Test
     func `Reconcile sets idle timers relevance score to zero`() {
-        let coordinator = TimerLiveActivityCoordinator()
+        let coordinator = TimerLiveActivityPrioritizer()
 
         let running = makeRunningTimerItem(label: "Running", seconds: 20)
         let idle = makeIdleTimerItem(label: "Idle", seconds: 40)

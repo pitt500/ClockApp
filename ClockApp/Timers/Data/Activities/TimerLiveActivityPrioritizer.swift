@@ -1,5 +1,5 @@
 //
-//  TimerLiveActivityCoordinator.swift
+//  TimerLiveActivityPrioritizer.swift
 //  ClockApp
 //
 //  Created by Pedro Rojas on 22/03/26.
@@ -7,12 +7,12 @@
 
 import Foundation
 
-protocol TimerLiveActivityCoordinating {
+protocol TimerLiveActivityPrioritizing {
     func highestPriorityTimer(from activeTimers: [TimerItem], at date: Date) -> TimerItem?
     func reconcile(activeTimers: [TimerItem], at date: Date)
 }
 
-final class TimerLiveActivityCoordinator: TimerLiveActivityCoordinating {
+final class TimerLiveActivityPrioritizer: TimerLiveActivityPrioritizing {
     private func prioritizedTimers(
         from activeTimers: [TimerItem],
         at date: Date
