@@ -4,6 +4,8 @@ A system design exploration of how the iOS Clock app might implement timers usin
 
 This project focuses on **architecture and behavior**, not pixel-perfect UI replication (although it is almost identical).
 
+![ClockApp Banner](images/banner.png)
+
 ---
 
 ## 🚀 Motivation
