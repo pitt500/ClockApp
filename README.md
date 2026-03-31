@@ -33,45 +33,7 @@ This is designed as a **learning and system design exercise**, not just a UI clo
 ---
 
 ## 🧠 Architecture Overview
-
-```
-                     USER INTERACTION
-                            │
-                            ▼
-                  ┌────────────────────┐
-                  │    TimersScreen    │
-                  │   (SwiftUI View)   │
-                  └─────────┬──────────┘
-                            │
-                            ▼
-                  ┌────────────────────┐
-                  │    TimersStore     │
-                  │  State + Workflow  │
-                  └──────┬─────┬───────┘
-                         │     │
-        ┌────────────────┘     └─────────────────┐
-        ▼                                        ▼
-┌────────────────────┐                 ┌────────────────────┐
-│   TimerManager     │                 │   Persistence      │
-│  Countdown Engine  │                 │  (Recents)         │
-└─────────┬──────────┘                 └────────────────────┘
-          │
-          ▼
-┌────────────────────────────┐
-│ Live Activity Prioritizer  │
-│   (System Policy Layer)    │
-└────────────┬───────────────┘
-             ▼
-┌────────────────────────────┐
-│ Activity Controller        │
-│ (ActivityKit Adapter)      │
-└────────────┬───────────────┘
-             ▼
-┌────────────────────────────┐
-│   iOS System Surfaces      │
-│ Dynamic Island / LockScreen│
-└────────────────────────────┘
-```
+![ClockApp Architecture](images/diagram.png)
 
 ---
 
