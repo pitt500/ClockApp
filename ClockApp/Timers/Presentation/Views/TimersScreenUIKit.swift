@@ -8,11 +8,15 @@
 import SwiftUI
 import UIKit
 
+@available(*, deprecated, message: "Use TimersScreen instead. This exists for demo purposes only.")
 struct TimersScreenUIKit: View {
     @State private var store = TimersStore()
     @Environment(\.editMode) private var editMode
+    @Environment(\.scenePhase) private var scenePhase
     @State private var route: Route?
     @State private var didLoadRecents = false
+    @State private var isShowingWhenTimerEndsDialog = false
+    @State private var selectedSound: TimerAlertSound = .default
 
     var body: some View {
         NavigationStack {
@@ -29,6 +33,13 @@ struct TimersScreenUIKit: View {
                     await store.loadRecentTimers()
                     didLoadRecents = true
                 }
+                .sheet(isPresented: $isShowingWhenTimerEndsDialog) {
+                    TimerAlertSoundPickerView(selectedSound: $selectedSound)
+                }
+                .onChange(of: scenePhase) { oldValue, newValue in
+                    guard oldValue == .background, newValue == .active else { return }
+                    store.dismissCurrentTimerAlert()
+                }
         }
     }
 
@@ -42,8 +53,12 @@ struct TimersScreenUIKit: View {
             isEditing: editMode?.wrappedValue.isEditing == true,
             header: {
                 AnyView(
-                    DraftHeaderView(draft: $store.draft) {
-                        store.startFromDraft()
+                    DraftHeaderView(
+                        draft: $store.draft,
+                        selectedSound: $selectedSound,
+                        isShowingWhenTimerEndsDialog: $isShowingWhenTimerEndsDialog
+                    ) {
+                        store.startFromDraft(sound: selectedSound)
                     }
                 )
             },
@@ -51,7 +66,7 @@ struct TimersScreenUIKit: View {
             onDeleteActive: { store.deleteActiveTimers(at: $0) },
             onDeleteRecents: { store.deleteRecentTimers(at: $0) },
             onSelectActive: { route = .detail(source: .active, id: $0) },
-            onSelectRecent: { route = .detail(source: .recent, id: $0) }
+            onSelectRecent: { _ in }
         )
     }
 
@@ -109,6 +124,8 @@ private enum Route: Identifiable, Hashable {
 
 private struct DraftHeaderView: View {
     @Binding var draft: TimersStore.Draft
+    @Binding var selectedSound: TimerAlertSound
+    @Binding var isShowingWhenTimerEndsDialog: Bool
     let onStart: () -> Void
 
     var body: some View {
@@ -149,14 +166,16 @@ private struct DraftHeaderView: View {
     }
 
     private var whenTimerEndsRow: some View {
-        Button { } label: {
+        Button {
+            isShowingWhenTimerEndsDialog = true
+        } label: {
             HStack(spacing: 12) {
                 Text("When Timer Ends")
                     .foregroundStyle(.primary)
 
                 Spacer(minLength: 8)
 
-                Text("Radar")
+                Text(selectedSound.title)
                     .foregroundStyle(.secondary)
 
                 Image(systemName: "chevron.right")
@@ -267,8 +286,6 @@ private struct TimersTableView: UIViewRepresentable {
         }
 
         private func configure(cell: UITableViewCell, at indexPath: IndexPath) {
-            cell.accessoryType = .disclosureIndicator
-            cell.selectionStyle = .default
             cell.backgroundColor = .clear
             cell.contentView.backgroundColor = .clear
 
@@ -283,6 +300,15 @@ private struct TimersTableView: UIViewRepresentable {
             else {
                 cell.contentConfiguration = nil
                 return
+            }
+
+            switch section {
+            case .active:
+                cell.accessoryType = .disclosureIndicator
+                cell.selectionStyle = .default
+            case .recents:
+                cell.accessoryType = .none
+                cell.selectionStyle = .none
             }
 
             cell.contentConfiguration = UIHostingConfiguration {
@@ -313,7 +339,7 @@ private struct TimersTableView: UIViewRepresentable {
             case .active:
                 model.onSelectActive(item.id)
             case .recents:
-                model.onSelectRecent(item.id)
+                break
             }
         }
 
@@ -464,8 +490,7 @@ private struct TimersTableView: UIViewRepresentable {
     }
 }
 
-#Preview {
-    TimersScreenUIKit()
-        .preferredColorScheme(.dark)
-}
-
+//#Preview {
+//    TimersScreenUIKit()
+//        .preferredColorScheme(.dark)
+//}
